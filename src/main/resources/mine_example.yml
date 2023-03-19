@@ -1,0 +1,23 @@
+id: a
+name: A
+world: world
+resetLengthSeconds: 600
+loc:
+  min:
+    x: 70
+    y: 70
+    z: 70
+  max:
+    x: 90
+    y: 100
+    z: 90
+  spawn:
+    # Bukkit's location
+contents:
+  maxWeight: 1000
+  list:
+  - DIRT:20
+  - OAK_LOG:100
+  - STONE:500
+  - IRON_ORE:380
+
