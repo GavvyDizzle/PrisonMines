@@ -1,13 +1,16 @@
 name: PrisonMines
 version: '${project.version}'
-main: me.github.gavvydizzle.prisonmines.PrisonMines
+main: com.github.gavvydizzle.prisonmines.PrisonMines
 api-version: 1.18
 depend: [ ServerUtils, WorldEdit ]
-softdepend: [ PlaceholderAPI, MultiverseCore ]
+softdepend: [ Multiverse-Core, PlaceholderAPI, ]
 authors: [ GavvyDizzle ]
 description: Lightweight prison mines plugin for Spigot
 commands:
   pmine:
+    aliases: mines
     description: PrisonMines admin commands
     permission: prisonmines.mineadmin
     permission-message: Insufficient permission
+  mine:
+    description: Mine teleport command

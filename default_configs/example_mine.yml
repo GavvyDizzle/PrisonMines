@@ -1,0 +1,32 @@
+id: d
+name: '&aMine D'
+world: mines
+# Reset every 10 minutes
+resetLengthSeconds: 600
+# or when the mine reaches 20% remaining
+resetPercentage: 20
+# Locations of the mine. These should only be changed in-game
+loc:
+  min:
+    x: -1
+    y: -60
+    z: -12
+  max:
+    x: 8
+    y: -51
+    z: -3
+  spawn:
+    ==: org.bukkit.Location
+    world: mines
+    x: 3.5
+    y: -50.0
+    z: -8.5
+    pitch: 0
+    yaw: 180
+# The blocks in your mine. It is easiest to edit these in-game
+contents:
+  maxWeight: 1000
+  list:
+  - GOLD_ORE:10
+  - IRON_ORE:100
+  - STONE:890
