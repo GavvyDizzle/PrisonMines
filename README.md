@@ -44,8 +44,10 @@ A lightweight and simple mines plugin for your Spigot server
 
 ### Mine Menus
  - Easily view the makeup of a mine
+
 ![contents.png](images/contents.png)
  - Easily change the makeup of a mine in this menu by clicking on a block
+
 ![controls.png](images/controls.png)
 
 ### Additional Information
