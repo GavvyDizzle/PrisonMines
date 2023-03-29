@@ -41,6 +41,7 @@ A lightweight and simple mines plugin for your Spigot server
  - `/pmine setResetTime <id> <seconds>` Updates the time between mine resets
  - `/pmine setSpawnLocation <id> [x] [y] [z] [pitch] [yaw]` Sets a mine's spawn location (sets to your location if none is provided)
  - `/pmine spawn <id>` Go to a mine's spawn (does the same thing as `/mine <id>`)
+ - `/pmine tpCenter <id>` Go to a mine's center point
 
 ### Mine Menus
  - Easily view the makeup of a mine
@@ -49,6 +50,21 @@ A lightweight and simple mines plugin for your Spigot server
  - Easily change the makeup of a mine in this menu by clicking on a block
 
 ![controls.png](images/controls.png)
+
+### Placeholders
+ - Each placeholder needs a mine ID to link to an existing mine
+ - `prisonmines_<id>_blocksremaining` Get the total number of solid blocks remaining
+ - `prisonmines_<id>_name` Get the name of the mine
+ - `prisonmines_<id>_percentmined` Get the percent of the mine that has been mined
+ - `prisonmines_<id>_percentremaining` Get the percent of the mine that is remaining
+ - `prisonmines_<id>_resetlength` Get the time between resets (formatted by default)
+ - `prisonmines_<id>_resetpercentage` Get the percent that this mine will reset at
+ - `prisonmines_<id>_timeuntilreset` Get the time until the next reset (formatted by default)
+ - `prisonmines_<id>_volume` Get the total number of blocks in this mine
+ - There are also additional placeholders for a mine's contents. Each content in the mine is internally labeled from 1 to n in the same order as they are listed in the panel's "Contents Overview" item
+ - `prisonmines_<id>_contents_<num>_material` Get the Material of the block
+ - `prisonmines_<id>_contents_<num>_percent` Get the percent of this block in the mine
+ - Note: All "percent" placeholders give a number. You need to add the % sign after it.
 
 ### Additional Information
  - The maximum size of a mine is 2 million blocks

@@ -12,6 +12,7 @@ import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.function.pattern.RandomPattern;
 import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.github.gavvydizzle.prisonmines.PrisonMines;
 import com.github.gavvydizzle.prisonmines.events.MinePostResetEvent;
@@ -305,6 +306,16 @@ public class Mine {
     }
 
     /**
+     * Teleports the player to this mine's center location
+     * @param player The player to teleport
+     * @return True if the player was teleported and false if the location is invalid
+     */
+    public boolean teleportToCenter(Player player) {
+        if (world == null) return false;
+        return player.teleport(getCenterLocation());
+    }
+
+    /**
      * Teleports all players to the mine spawn on reset.
      * If the spawn point is null, players will be teleported to the top of the mine.
      */
@@ -511,6 +522,17 @@ public class Mine {
      */
     public Location getMaxLocation() {
         return new Location(world, max.getX(), max.getY(), max.getZ());
+    }
+
+    /**
+     * Gets the center location of the mine
+     * The y value of this location will be one higher than the max point's y value
+     * @return A new Location object
+     */
+    public Location getCenterLocation() {
+        // Add 0.5 to x and z to account for the max point not being the border of the mine
+        Vector3 center = region.getCenter();
+        return new Location(world, center.getX() + 0.5, max.getY() + 1, center.getZ() + 0.5);
     }
 
     public boolean failedToLoad() {

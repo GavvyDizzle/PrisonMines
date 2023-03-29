@@ -47,6 +47,7 @@ public class AdminCommandManager implements TabExecutor {
         subcommands.add(new SetMineResetPercentageCommand(this, mineManager));
         subcommands.add(new SetMineResetSecondsCommand(this, mineManager));
         subcommands.add(new SetSpawnLocationCommand(this, mineManager));
+        subcommands.add(new TeleportCenterCommand(this, mineManager));
         Collections.sort(subcommands);
 
         for (SubCommand subCommand : subcommands) {
