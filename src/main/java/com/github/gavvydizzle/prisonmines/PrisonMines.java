@@ -13,7 +13,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
 
-// TODO - Reset time char messages/warnings
 public final class PrisonMines extends JavaPlugin {
 
     private static PrisonMines instance;
