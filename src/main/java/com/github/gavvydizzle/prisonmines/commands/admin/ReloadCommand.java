@@ -96,7 +96,7 @@ public class ReloadCommand extends SubCommand implements PermissionCommand {
 
     private void reloadCommands() {
         CommandsConfig.reload();
-        PrisonMines.getInstance().getAdminCommandManager().reload();
+        adminCommandManager.reload();
     }
 
     private void reloadMessages() {

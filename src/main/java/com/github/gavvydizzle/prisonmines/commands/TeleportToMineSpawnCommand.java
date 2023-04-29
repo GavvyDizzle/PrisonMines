@@ -30,6 +30,7 @@ public class TeleportToMineSpawnCommand implements TabExecutor {
 
         if (args.length == 0) {
             sender.sendMessage(ChatColor.YELLOW + "/mine <id>");
+            return true;
         }
 
         Mine mine = mineManager.getMine(args[0]);
@@ -41,6 +42,7 @@ public class TeleportToMineSpawnCommand implements TabExecutor {
         Player player = (Player) sender;
         if (!mine.hasAccessPermission(player)) {
             sender.sendMessage(Messages.cannotAccessMine);
+            return true;
         }
 
         if (!mine.teleportToSpawn((Player) sender)) {

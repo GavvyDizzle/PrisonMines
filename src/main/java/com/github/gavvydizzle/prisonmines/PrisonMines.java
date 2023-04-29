@@ -18,7 +18,6 @@ public final class PrisonMines extends JavaPlugin {
     private static PrisonMines instance;
     private MineManager mineManager;
     private InventoryManager inventoryManager;
-    private AdminCommandManager adminCommandManager;
 
     @Override
     public void onEnable() {
@@ -35,7 +34,7 @@ public final class PrisonMines extends JavaPlugin {
         getServer().getPluginManager().registerEvents(inventoryManager, this);
 
         try {
-            adminCommandManager = new AdminCommandManager(Objects.requireNonNull(getCommand("pmine")), mineManager, inventoryManager);
+            new AdminCommandManager(Objects.requireNonNull(getCommand("pmine")), mineManager, inventoryManager);
         } catch (NullPointerException e) {
             getLogger().severe("The admin command name was changed in the plugin.yml file. Please make it \"islandAdmin\" and restart the server. You can change the aliases but NOT the command name.");
             getServer().getPluginManager().disablePlugin(this);
@@ -80,9 +79,5 @@ public final class PrisonMines extends JavaPlugin {
 
     public InventoryManager getInventoryManager() {
         return inventoryManager;
-    }
-
-    public AdminCommandManager getAdminCommandManager() {
-        return adminCommandManager;
     }
 }
