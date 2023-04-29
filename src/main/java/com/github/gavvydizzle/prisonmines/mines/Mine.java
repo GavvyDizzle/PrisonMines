@@ -220,7 +220,9 @@ public class Mine {
 
             // Make the various WorldEdit block states by using the BukkitAdapter from the spigot block data
             for (MineBlock mineBlock : contents.getBlockList()) {
-                pat.add(BukkitAdapter.adapt(mineBlock.getMaterial().createBlockData()), mineBlock.getWeight());
+                if (mineBlock.getWeight() > 0) {
+                    pat.add(BukkitAdapter.adapt(mineBlock.getMaterial().createBlockData()), mineBlock.getWeight());
+                }
             }
 
             // Pass in the region and pattern
