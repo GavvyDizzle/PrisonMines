@@ -82,7 +82,7 @@
         <dependency>
             <groupId>com.github.mittenmc</groupId>
             <artifactId>ServerUtils</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -96,12 +96,6 @@
             <artifactId>PlaceholderAPI</artifactId>
             <version>2.11.1</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>23.1.0</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

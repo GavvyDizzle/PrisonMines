@@ -114,7 +114,8 @@ public class MineManager implements Listener {
 
     /**
      * Starts a clock that runs every 20 server ticks (once a second)
-     * This clock checks for an initiates mine resets
+     * This clock initiates a mine reset when a mine is checked after its next reset time has been passed.
+     * If the mine is paused, then it will not be checked.
      */
     private void startResetClock() {
         new RepeatingTask(instance, 0, 20) {
@@ -122,6 +123,8 @@ public class MineManager implements Listener {
             public void run() {
                 tick++;
                 for (Mine mine : mines.values()) {
+                    if (mine.isResettingPaused()) continue;
+
                     int secondsRemaining = mine.getNextResetTick() - tick;
 
                     if (resetMessageSeconds.contains(secondsRemaining)) {
@@ -143,7 +146,7 @@ public class MineManager implements Listener {
 
     private void sendResetMessage(Mine mine, int secondsRemaining) {
         String message = secondsRemaining == 1 ? Messages.mineResetCountdownSingular.replace("{mine_name}", mine.getName()) :
-                Messages.mineResetCountdown.replace("{mine_name}", mine.getName()).replace("{time}", "" + secondsRemaining);
+                Messages.mineResetCountdown.replace("{mine_name}", mine.getName()).replace("{time}", String.valueOf(secondsRemaining));
 
         for (Player player : mine.getPlayersInMine()) {
             player.sendMessage(message);

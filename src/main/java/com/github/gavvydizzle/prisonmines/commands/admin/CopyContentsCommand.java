@@ -1,10 +1,10 @@
 package com.github.gavvydizzle.prisonmines.commands.admin;
 
-import com.github.mittenmc.serverutils.PermissionCommand;
-import com.github.mittenmc.serverutils.SubCommand;
 import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
+import com.github.mittenmc.serverutils.PermissionCommand;
+import com.github.mittenmc.serverutils.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -79,7 +79,7 @@ public class CopyContentsCommand extends SubCommand implements PermissionCommand
     }
 
     @Override
-    public List<String> getSubcommandArguments(Player player, String[] args) {
+    public List<String> getSubcommandArguments(CommandSender sender, String[] args) {
         ArrayList<String> list = new ArrayList<>();
 
         if (args.length == 2) {

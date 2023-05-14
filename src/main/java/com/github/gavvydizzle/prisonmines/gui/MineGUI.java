@@ -32,6 +32,8 @@ public class MineGUI implements ClickableMenu {
     static {
         component = new TextComponent(TextComponent.fromLegacyText(Colors.conv("&7(!) Click here for command (!)")));
 
+        //TODO - Show current values in all of the items where applicable
+
         spawnLocItem = new ItemStack(Material.OAK_DOOR);
         ItemMeta meta = spawnLocItem.getItemMeta();
         assert meta != null;

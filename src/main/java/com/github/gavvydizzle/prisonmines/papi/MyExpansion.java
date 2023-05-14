@@ -67,23 +67,23 @@ public class MyExpansion extends PlaceholderExpansion {
 
             switch (args[3].toLowerCase()) {
                 case "material":
-                    return arr.get(index).getMaterial().toString();
+                    return arr.get(index).getFormattedName();
                 case "percent":
-                    return "" + Numbers.round(mine.getContents().getMineBlockFrequency(arr.get(index))*100, 2);
+                    return String.valueOf(Numbers.round(mine.getContents().getMineBlockFrequency(arr.get(index)) * 100, 2));
                 default:
                     return null;
             }
         }
 
         switch (args[1].toLowerCase()) {
-            case "timeuntilreset": return Numbers.getTimeFormatted(mineManager.getSecondsUntilNextReset(mine));
+            case "timeuntilreset": return Numbers.getTimeFormatted(mineManager.getSecondsUntilNextReset(mine), "0s");
             case "name": return mine.getName();
-            case "percentremaining": return "" + Numbers.round(mine.getPercentRemaining(), 2);
-            case "percentmined": return "" + Numbers.round(mine.getPercentMined(), 2);
-            case "blocksremaining": return  "" + mine.getNumSolidBlocks();
-            case "resetpercentage": return "" + mine.getResetPercentage();
-            case "volume": return "" + mine.getVolume();
-            case "resetlength": return "" + Numbers.getTimeFormatted(mine.getResetLengthSeconds());
+            case "percentremaining": return String.valueOf(Numbers.round(mine.getPercentRemaining(), 2));
+            case "percentmined": return String.valueOf(Numbers.round(mine.getPercentMined(), 2));
+            case "blocksremaining": return String.valueOf(mine.getNumSolidBlocks());
+            case "resetpercentage": return String.valueOf(mine.getResetPercentage());
+            case "volume": return String.valueOf(mine.getVolume());
+            case "resetlength": return Numbers.getTimeFormatted(mine.getResetLengthSeconds());
         }
 
         return null;

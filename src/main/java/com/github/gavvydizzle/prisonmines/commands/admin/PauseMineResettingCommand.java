@@ -3,23 +3,21 @@ package com.github.gavvydizzle.prisonmines.commands.admin;
 import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
-import com.github.gavvydizzle.prisonmines.utils.Messages;
 import com.github.mittenmc.serverutils.PermissionCommand;
 import com.github.mittenmc.serverutils.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TeleportCenterCommand extends SubCommand implements PermissionCommand {
+public class PauseMineResettingCommand extends SubCommand implements PermissionCommand {
 
     private final AdminCommandManager adminCommandManager;
     private final MineManager mineManager;
 
-    public TeleportCenterCommand(AdminCommandManager adminCommandManager, MineManager mineManager) {
+    public PauseMineResettingCommand(AdminCommandManager adminCommandManager, MineManager mineManager) {
         this.adminCommandManager = adminCommandManager;
         this.mineManager = mineManager;
     }
@@ -31,17 +29,17 @@ public class TeleportCenterCommand extends SubCommand implements PermissionComma
 
     @Override
     public String getName() {
-        return "tpCenter";
+        return "pauseResetting";
     }
 
     @Override
     public String getDescription() {
-        return "Teleport to a mine's center point";
+        return "Toggle the mine's ability to reset";
     }
 
     @Override
     public String getSyntax() {
-        return "/" + adminCommandManager.getCommandDisplayName() + " tpCenter <id>";
+        return "/" + adminCommandManager.getCommandDisplayName() + " pauseResetting <id>";
     }
 
     @Override
@@ -51,8 +49,6 @@ public class TeleportCenterCommand extends SubCommand implements PermissionComma
 
     @Override
     public void perform(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player)) return;
-
         if (args.length < 2) {
             sender.sendMessage(getColoredSyntax());
             return;
@@ -60,12 +56,16 @@ public class TeleportCenterCommand extends SubCommand implements PermissionComma
 
         Mine mine = mineManager.getMine(args[1]);
         if (mine == null) {
-            sender.sendMessage(Messages.invalidMineId.replace("{id}", args[1]));
+            sender.sendMessage(ChatColor.RED + "No mine exists with the id: " + args[1]);
             return;
         }
 
-        if (!mine.teleportToCenter((Player) sender)) {
-            sender.sendMessage(ChatColor.RED + "Unable to create center point for " + mine.getId());
+        mine.toggleIsResettingPaused();
+        if (mine.isResettingPaused()) {
+            sender.sendMessage(ChatColor.YELLOW + "This mine can no longer reset. The timer will count down, but it will pause at 0 seconds.");
+        }
+        else {
+            sender.sendMessage(ChatColor.GREEN + "This mine can now reset");
         }
     }
 

@@ -34,11 +34,13 @@ public class AdminCommandManager implements TabExecutor {
         command.setExecutor(this);
 
         subcommands.add(new AdminHelpCommand(this));
+        subcommands.add(new ClearMineCommand(this, mineManager));
         subcommands.add(new CopyContentsCommand(this, mineManager));
         subcommands.add(new CreateMineCommand(this, mineManager));
         subcommands.add(new DeleteMineCommand(this, mineManager));
         subcommands.add(new MineSpawnCommand(this, mineManager));
         subcommands.add(new OpenMinePanelCommand(this, mineManager, inventoryManager));
+        subcommands.add(new PauseMineResettingCommand(this, mineManager));
         subcommands.add(new ReloadCommand(this));
         subcommands.add(new ResetMineCommand(this, mineManager));
         subcommands.add(new ResizeMineCommand(this, mineManager));
@@ -121,7 +123,7 @@ public class AdminCommandManager implements TabExecutor {
         else if (args.length >= 2) {
             for (SubCommand subcommand : subcommands) {
                 if (args[0].equalsIgnoreCase(subcommand.getName())) {
-                    return subcommand.getSubcommandArguments((Player) sender, args);
+                    return subcommand.getSubcommandArguments(sender, args);
                 }
             }
         }

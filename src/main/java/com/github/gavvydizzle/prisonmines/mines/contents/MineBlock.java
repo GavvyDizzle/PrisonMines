@@ -10,20 +10,27 @@ import org.jetbrains.annotations.NotNull;
 public class MineBlock implements Comparable<MineBlock> {
 
     private final Material material;
+    private final String formattedName;
     private int weight;
 
     public MineBlock(Material material) {
         this.material = material;
+        this.formattedName = capitalizeFirstLetters(material);
         this.weight = 0;
     }
 
     public MineBlock(Material material, int weight) {
         this.material = material;
+        this.formattedName = capitalizeFirstLetters(material);
         this.weight = weight;
     }
 
     public Material getMaterial() {
         return material;
+    }
+
+    public String getFormattedName() {
+        return formattedName;
     }
 
     public int getWeight() {
@@ -55,5 +62,23 @@ public class MineBlock implements Comparable<MineBlock> {
         else {
             return -1;
         }
+    }
+
+    /**
+     * Capitalizes the words in a Material.
+     * Splits up the material name into words where the underscores are.
+     *
+     * @param material The material to use
+     * @return A nicely formatted name for the given material
+     */
+    private static String capitalizeFirstLetters(Material material) {
+        StringBuilder output = new StringBuilder();
+        String[] arr = material.name().toLowerCase().replace("_", " ").split(" ");
+        for (String s : arr) {
+            String first = s.substring(0, 1).toUpperCase();
+            output.append(first).append(s.substring(1)).append(" ");
+        }
+
+        return output.toString().trim();
     }
 }

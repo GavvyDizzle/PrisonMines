@@ -101,7 +101,7 @@ public class MineContents {
         }
 
         calculateClickAmounts();
-        calculateTotalWeight();
+        calculateTotalWeight(false);
         Collections.sort(blockList);
 
         mineBlockWeightSorter = new MineBlockWeightSorter();
@@ -111,16 +111,16 @@ public class MineContents {
 
     // Calculates the total weight of all MineBlocks
     // If the total weight is greater than the max, then a detailed error message is printed to the console
-    private void calculateTotalWeight() {
+    private void calculateTotalWeight(boolean ignoreWeightCheck) {
         totalWeight = 0;
         for (MineBlock mineBlock : blockList) {
             totalWeight += mineBlock.getWeight();
         }
 
-        if (totalWeight > maxWeight) {
+        if (!ignoreWeightCheck && totalWeight > maxWeight) {
             PrisonMines.getInstance().getLogger().warning("The max weight of this mine was " + maxWeight + ".\n" +
                     "The total weight adds up to " + totalWeight + ".\n" +
-                    "The max weight has been changed to " + totalWeight + "to prevent unintended behavior.\n" +
+                    "The max weight has been changed to " + totalWeight + " to prevent unintended behavior.\n" +
                     "This mine's settings have been manually altered. Below is the current contents of the mine:\n" +
                     blockList);
             maxWeight = totalWeight;
@@ -197,7 +197,7 @@ public class MineContents {
             }
         }
 
-        calculateTotalWeight();
+        calculateTotalWeight(false);
         Collections.sort(blockList);
         hasChanged = true;
         return WeightChangeResult.SUCCESSFUL;
@@ -216,20 +216,41 @@ public class MineContents {
 
     /**
      * Updates the max weight for this mine
-     * @param maxWeight The new max weight
+     * @param newMaxWeight The new max weight
+     * @param scale If the existing weights should scale with the new value
      * @return True if the value was updated, false otherwise
      */
-    public boolean setMaxWeight(int maxWeight) {
-        if (maxWeight < totalWeight) return false;
-        else {
-            this.maxWeight = maxWeight;
-            calculateClickAmounts();
+    public boolean setMaxWeight(int newMaxWeight, boolean scale) {
+        if (scale) {
+            if (canContentsScale(newMaxWeight)) {
+                double multiplier = newMaxWeight * 1.0 / maxWeight;
 
-            mine.getMineGUI().update();
-            mine.updateMaxWeight();
+                for (MineBlock mineBlock : blockList) {
+                    mineBlock.setWeight((int) Math.round(multiplier * mineBlock.getWeight()));
+                }
 
-            return true;
+                calculateTotalWeight(true);
+                Collections.sort(blockList);
+                hasChanged = true;
+            }
+            else {
+                return false;
+            }
         }
+        else { // Only allow the new weight to be lower when scaling
+            if (newMaxWeight < totalWeight) {
+                return false;
+            }
+        }
+
+        maxWeight = newMaxWeight;
+        calculateClickAmounts();
+
+        mine.getMineGUI().update();
+        if (scale) mine.pushContentsUpdate();
+        else mine.updateMaxWeight();
+
+        return true;
     }
 
     /**
@@ -239,6 +260,36 @@ public class MineContents {
      */
     public boolean isMaterialAlreadyUsed(Material material) {
         return getMineBlock(material) != null;
+    }
+
+    /**
+     * Determines if the new max weight can scale properly to the new value.
+     * If the updated weights would not scale to whole numbers, then this will return false.
+     * @param newMaxWeight The weight to attempt to scale to
+     * @return If these contents can scale directly to the new max weight
+     */
+    private boolean canContentsScale(int newMaxWeight) {
+        if (maxWeight == newMaxWeight) return true;
+
+        double multiplier = newMaxWeight * 1.0 / maxWeight;
+
+        double expectedWeightUsedDouble = totalWeight * multiplier;
+        int expectedWeightUsed = (int) Math.round(expectedWeightUsedDouble);
+
+        // Check if the new weight is actually an integer value
+        // If it is not, this cannot scale correctly
+        if (Math.abs(expectedWeightUsedDouble - expectedWeightUsed) > 1e-6) return false;
+
+        // Check if each block would have the same distribution
+        for (MineBlock mineBlock : blockList) {
+            double oldDist = mineBlock.getWeight() * 1.0 / totalWeight;
+            double newDist = Math.round(multiplier * mineBlock.getWeight()) * 1.0 / expectedWeightUsed;
+
+            // If the distribution does not match "exactly" then it won't scale correctly
+            if (Math.abs(oldDist - newDist) > 1e-6) return false;
+        }
+
+        return true;
     }
 
     public ItemStack getInfoItem() {

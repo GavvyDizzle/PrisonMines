@@ -1,22 +1,23 @@
 package com.github.gavvydizzle.prisonmines.commands.admin;
 
+import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
+import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
 import com.github.mittenmc.serverutils.PermissionCommand;
 import com.github.mittenmc.serverutils.SubCommand;
-import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
-import com.github.gavvydizzle.prisonmines.mines.Mine;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SetMaxWeightCommand extends SubCommand implements PermissionCommand {
 
     private final AdminCommandManager adminCommandManager;
     private final MineManager mineManager;
+    private final ArrayList<String> args2 = new ArrayList<>(Collections.singletonList("scale"));
 
     public SetMaxWeightCommand(AdminCommandManager adminCommandManager, MineManager mineManager) {
         this.adminCommandManager = adminCommandManager;
@@ -40,7 +41,7 @@ public class SetMaxWeightCommand extends SubCommand implements PermissionCommand
 
     @Override
     public String getSyntax() {
-        return "/" + adminCommandManager.getCommandDisplayName() + " setMaxWeight <id> <weight>";
+        return "/" + adminCommandManager.getCommandDisplayName() + " setMaxWeight <id> <weight> [scale]";
     }
 
     @Override
@@ -69,21 +70,37 @@ public class SetMaxWeightCommand extends SubCommand implements PermissionCommand
             return;
         }
 
+        boolean scale = args.length >= 4 && args[3].equalsIgnoreCase("scale");
         int oldValue = mine.getContents().getMaxWeight();
-        if (mine.getContents().setMaxWeight(maxWeight)) {
-            sender.sendMessage(ChatColor.GREEN + "Updated " + mine.getName() + ChatColor.GREEN + " max weight to " + maxWeight + ChatColor.GRAY + " (was " + oldValue + ")");
+
+        if (scale) {
+            if (mine.getContents().setMaxWeight(maxWeight, true)) {
+                sender.sendMessage(ChatColor.GREEN + "Updated " + mine.getName() + ChatColor.GREEN + " max weight to " + maxWeight + ChatColor.GRAY + " (was " + oldValue + ")");
+                sender.sendMessage(ChatColor.GREEN + "All contents were scaled to have the same distribution");
+            }
+            else {
+                sender.sendMessage(ChatColor.RED + "The contents cannot scale correctly to this new max weight");
+            }
         }
         else {
-            sender.sendMessage(ChatColor.RED + "Unable to update " + mine.getName() + " max weight to " + maxWeight + ". It must be greater than or equal to the total weight which is " + mine.getContents().getTotalWeight());
+            if (mine.getContents().setMaxWeight(maxWeight, false)) {
+                sender.sendMessage(ChatColor.GREEN + "Updated " + mine.getName() + ChatColor.GREEN + " max weight to " + maxWeight + ChatColor.GRAY + " (was " + oldValue + ")");
+            }
+            else {
+                sender.sendMessage(ChatColor.RED + "Unable to update " + mine.getName() + ChatColor.RED + " max weight to " + maxWeight + ". It must be greater than or equal to the total weight which is " + mine.getContents().getTotalWeight());
+            }
         }
     }
 
     @Override
-    public List<String> getSubcommandArguments(Player player, String[] args) {
+    public List<String> getSubcommandArguments(CommandSender sender, String[] args) {
         ArrayList<String> list = new ArrayList<>();
 
         if (args.length == 2) {
             StringUtil.copyPartialMatches(args[1], mineManager.getMineIDs(), list);
+        }
+        else if (args.length == 4) {
+            StringUtil.copyPartialMatches(args[3], args2, list);
         }
 
         return list;

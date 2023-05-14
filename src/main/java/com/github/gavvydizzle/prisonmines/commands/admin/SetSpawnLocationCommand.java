@@ -1,11 +1,11 @@
 package com.github.gavvydizzle.prisonmines.commands.admin;
 
 import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
+import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
 import com.github.mittenmc.serverutils.Numbers;
 import com.github.mittenmc.serverutils.PermissionCommand;
 import com.github.mittenmc.serverutils.SubCommand;
-import com.github.gavvydizzle.prisonmines.mines.Mine;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -95,7 +95,7 @@ public class SetSpawnLocationCommand extends SubCommand implements PermissionCom
     }
 
     @Override
-    public List<String> getSubcommandArguments(Player player, String[] args) {
+    public List<String> getSubcommandArguments(CommandSender sender, String[] args) {
         ArrayList<String> list = new ArrayList<>();
 
         switch (args.length) {
@@ -103,19 +103,29 @@ public class SetSpawnLocationCommand extends SubCommand implements PermissionCom
                 StringUtil.copyPartialMatches(args[1], mineManager.getMineIDs(), list);
                 break;
             case 3:
-                StringUtil.copyPartialMatches(args[2], Collections.singletonList("" + Numbers.round(player.getLocation().getX(), 1)), list);
+                if (sender instanceof Player) {
+                    StringUtil.copyPartialMatches(args[2], Collections.singletonList(String.valueOf(Numbers.round(((Player) sender).getLocation().getX(), 1))), list);
+                }
                 break;
             case 4:
-                StringUtil.copyPartialMatches(args[3], Collections.singletonList("" + Numbers.round(player.getLocation().getY(), 4)), list);
+                if (sender instanceof Player) {
+                    StringUtil.copyPartialMatches(args[3], Collections.singletonList(String.valueOf(Numbers.round(((Player) sender).getLocation().getY(), 4))), list);
+                }
                 break;
             case 5:
-                StringUtil.copyPartialMatches(args[4], Collections.singletonList("" + Numbers.round(player.getLocation().getZ(), 1)), list);
+                if (sender instanceof Player) {
+                    StringUtil.copyPartialMatches(args[4], Collections.singletonList(String.valueOf(Numbers.round(((Player) sender).getLocation().getZ(), 1))), list);
+                }
                 break;
             case 6:
-                StringUtil.copyPartialMatches(args[5], Collections.singletonList("" + Numbers.round(player.getLocation().getYaw(), 0)), list);
+                if (sender instanceof Player) {
+                    StringUtil.copyPartialMatches(args[5], Collections.singletonList(String.valueOf(Numbers.round(((Player) sender).getLocation().getYaw(), 0))), list);
+                }
                 break;
             case 7:
-                StringUtil.copyPartialMatches(args[6], Collections.singletonList("" + Numbers.round(player.getLocation().getPitch(), 0)), list);
+                if (sender instanceof Player) {
+                    StringUtil.copyPartialMatches(args[6], Collections.singletonList(String.valueOf(Numbers.round(((Player) sender).getLocation().getPitch(), 0))), list);
+                }
                 break;
         }
 

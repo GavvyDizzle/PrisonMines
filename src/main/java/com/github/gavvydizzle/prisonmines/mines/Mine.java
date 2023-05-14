@@ -10,6 +10,7 @@ import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.function.mask.Masks;
 import com.sk89q.worldedit.function.pattern.RandomPattern;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.Vector3;
@@ -54,6 +55,7 @@ public class Mine {
     private final ResetPercentageMenu resetPercentageMenu;
     private int volume;
     private int numSolidBlocks;
+    private boolean isResettingPaused;
 
     // Internal stuff
     private final CuboidRegion region;
@@ -205,10 +207,12 @@ public class Mine {
     /**
      * Resets this mine by replacing all blocks in the mine.
      * Calling this method schedules the next reset as well.
+     * If a paused mine resets then its timer resumes.
      */
     public void resetMine() {
         updateNextResetTick();
         resetTimeChanged = false;
+        isResettingPaused = false;
 
         if (contents.isBlank()) return;
 
@@ -231,6 +235,26 @@ public class Mine {
             numSolidBlocks = volume;
             Bukkit.getScheduler().runTask(PrisonMines.getInstance(), () -> Bukkit.getPluginManager().callEvent(new MinePostResetEvent(this)));
             teleportContainedPlayersToSpawn();
+
+        } catch (MaxChangedBlocksException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Sets all blocks in the mine to air
+     */
+    public void clearMine() {
+        com.sk89q.worldedit.world.World w = BukkitAdapter.adapt(world);
+        CuboidRegion selection = new CuboidRegion(w, min, max);
+
+        try (EditSession editSession = WorldEdit.getInstance().newEditSession(w)) {
+            RandomPattern pat = new RandomPattern();
+            pat.add(BukkitAdapter.adapt(Material.AIR.createBlockData()), 1);
+
+            // Create analogous WorldEdit region and set it to air
+            CuboidRegion cr = new CuboidRegion(region.getMinimumPoint(), region.getMaximumPoint());
+            editSession.replaceBlocks(cr, Masks.alwaysTrue(), pat);
 
         } catch (MaxChangedBlocksException ex) {
             ex.printStackTrace();
@@ -314,7 +338,7 @@ public class Mine {
      */
     public boolean teleportToCenter(Player player) {
         if (world == null) return false;
-        return player.teleport(getCenterLocation());
+        return player.teleport(getCenterSurfaceLocation());
     }
 
     /**
@@ -527,11 +551,11 @@ public class Mine {
     }
 
     /**
-     * Gets the center location of the mine
+     * Gets the center location of the mine on the top surface.
      * The y value of this location will be one higher than the max point's y value
      * @return A new Location object
      */
-    public Location getCenterLocation() {
+    public Location getCenterSurfaceLocation() {
         // Add 0.5 to x and z to account for the max point not being the border of the mine
         Vector3 center = region.getCenter();
         return new Location(world, center.getX() + 0.5, max.getY() + 1, center.getZ() + 0.5);
@@ -563,6 +587,14 @@ public class Mine {
 
     public int getNumSolidBlocks() {
         return numSolidBlocks;
+    }
+
+    public boolean isResettingPaused() {
+        return isResettingPaused;
+    }
+
+    public void toggleIsResettingPaused() {
+        isResettingPaused = !isResettingPaused;
     }
 
     public double getPercentMined() {

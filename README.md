@@ -27,11 +27,13 @@ A lightweight and simple mines plugin for your Spigot server
  - The base command is `pmine` (alias `mines`) with the permission `prisonmines.mineadmin`
  - All commands require permission to use which follows the format `prisonmines.mineadmin.command` where command is the name of the command
  - Note: arguments with <> are required and [] are optional
+ - `/pmine clear <id>` Set the mine to air
  - `/pmine cloneContents <from> <to>` Clone a mine's contents from one mine to another
  - `/pmine create <id> [copyID]` Create a new mine (optional: clone a mine's settings/contents)
  - `/pmine delete <id>` Delete a mine
  - `/pmine help` Displays all commands
  - `/pmine panel [id]` Opens a menu displaying all mines or a mine's panel
+ - `/pmine pauseResetting <id>` Toggle the mine's ability to reset
  - `/pmine reload [arg]` Reload the whole plugin or a specified part
  - `/pmine reset <id|all>` Reset all or one mine
  - `/pmine resize <id>` Update the mine's region to your WorldGuard selection
@@ -69,3 +71,4 @@ A lightweight and simple mines plugin for your Spigot server
 ### Additional Information
  - The maximum size of a mine is 2 million blocks
  - A mine can have at most 45 different blocks in it
+ - A paused mine will resume if you force it to reset or restart the server
