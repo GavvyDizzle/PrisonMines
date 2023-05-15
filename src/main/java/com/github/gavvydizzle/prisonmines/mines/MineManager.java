@@ -136,7 +136,7 @@ public class MineManager implements Listener {
                             mine.updateNextResetTick(); //don't reset but restart the timer
                         }
                         else {
-                            mine.resetMine();
+                            mine.resetMine(true);
                         }
                     }
                 }
@@ -172,7 +172,7 @@ public class MineManager implements Listener {
                 // Checks if the mine is still loaded
                 // This mine will be skipped in the event that it was deleted
                 if (mines.containsKey(arr.get(i).getId())) {
-                    arr.get(i++).resetMine();
+                    arr.get(i++).resetMine(true);
                 }
             }
         };

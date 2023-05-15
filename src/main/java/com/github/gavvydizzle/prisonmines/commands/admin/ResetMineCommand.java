@@ -66,7 +66,7 @@ public class ResetMineCommand extends SubCommand implements PermissionCommand {
             return;
         }
 
-        mine.resetMine();
+        mine.resetMine(true);
         sender.sendMessage(ChatColor.GREEN + "Resetting " + mine.getName());
     }
 

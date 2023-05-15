@@ -208,11 +208,12 @@ public class Mine {
      * Resets this mine by replacing all blocks in the mine.
      * Calling this method schedules the next reset as well.
      * If a paused mine resets then its timer resumes.
+     * @param resumeFromPause If a paused timer should be resumed
      */
-    public void resetMine() {
+    public void resetMine(boolean resumeFromPause) {
         updateNextResetTick();
         resetTimeChanged = false;
-        isResettingPaused = false;
+        if (resumeFromPause) isResettingPaused = false;
 
         if (contents.isBlank()) return;
 
@@ -397,7 +398,7 @@ public class Mine {
     }
 
     /**
-     * Updates the spawn location of this mine and pushes changes to the mine;s config file
+     * Updates the spawn location of this mine and pushes changes to the mine's config file
      * @param location The new location
      * @return If the location was updated
      */
@@ -407,6 +408,7 @@ public class Mine {
         }
 
         spawnLocation = location;
+        mineGUI.updateSpawnLocItem();
 
         config.set("loc.spawn", spawnLocation);
         updateConfigFileAsync("Failed to push spawn location update to " + file.getName());
@@ -511,6 +513,7 @@ public class Mine {
      */
     public void setName(String newName) {
         name = Colors.conv(newName);
+        mineGUI.updateNameItem();
 
         config.set("name", newName);
         updateConfigFileAsync("Failed to push name update to " + file.getName());
@@ -523,6 +526,7 @@ public class Mine {
     public void setResetLengthSeconds(int seconds) {
         seconds = Numbers.constrain(seconds, 60, 86400);
         resetLengthSeconds = seconds;
+        mineGUI.updateResetTimeItem();
     }
 
     /**
@@ -532,6 +536,7 @@ public class Mine {
     public void setResetPercentage(int percent) {
         percent = Numbers.constrain(percent, 0, 95);
         resetPercentage = percent;
+        mineGUI.updateResetPercentageItem();
     }
 
     /**
@@ -563,6 +568,10 @@ public class Mine {
 
     public boolean failedToLoad() {
         return failedToLoad;
+    }
+
+    public boolean hasSpawnLocation() {
+        return spawnLocation != null;
     }
 
     public int getResetLengthSeconds() {

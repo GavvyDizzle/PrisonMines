@@ -22,11 +22,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Objects;
 
 public class MineGUI implements ClickableMenu {
 
     private static final TextComponent component;
+    private static final int spawnLocItemSlot = 4, maxWeightItemSlot = 7, nameItemSlot = 3, resetTimeItemSlot = 5, resetPercentageItemSlot = 6, resetNowItemSlot = 8;
     private static final ItemStack spawnLocItem, maxWeightItem, nameItem, resetTimeItem, resetPercentageItem, resetNowItem;
 
     static {
@@ -38,35 +41,50 @@ public class MineGUI implements ClickableMenu {
         ItemMeta meta = spawnLocItem.getItemMeta();
         assert meta != null;
         meta.setDisplayName(Colors.conv("&eChange Spawn Location"));
-        meta.setLore(Collections.singletonList(Colors.conv("&7Click here to change")));
+        meta.setLore(Colors.conv(Arrays.asList(
+                "&7Click here to change",
+                "&7Is set: &a{val}"
+        )));
         spawnLocItem.setItemMeta(meta);
 
         maxWeightItem = new ItemStack(Material.ANVIL);
         meta = maxWeightItem.getItemMeta();
         assert meta != null;
         meta.setDisplayName(Colors.conv("&eChange Max Weight"));
-        meta.setLore(Collections.singletonList(Colors.conv("&7Click here to change")));
+        meta.setLore(Colors.conv(Arrays.asList(
+                "&7Click here to change",
+                "&7Current weight: &a{val}"
+        )));
         maxWeightItem.setItemMeta(meta);
 
         nameItem = new ItemStack(Material.FEATHER);
         meta = nameItem.getItemMeta();
         assert meta != null;
         meta.setDisplayName(Colors.conv("&eChange Display Name"));
-        meta.setLore(Collections.singletonList(Colors.conv("&7Click here to change")));
+        meta.setLore(Colors.conv(Arrays.asList(
+                "&7Click here to change",
+                "&7Current name: {val}"
+        )));
         nameItem.setItemMeta(meta);
 
         resetTimeItem = new ItemStack(Material.CLOCK);
         meta = resetTimeItem.getItemMeta();
         assert meta != null;
         meta.setDisplayName(Colors.conv("&eChange Reset Time"));
-        meta.setLore(Collections.singletonList(Colors.conv("&7Click here to change")));
+        meta.setLore(Colors.conv(Arrays.asList(
+                "&7Click here to change",
+                "&7Current time: &a{val}"
+        )));
         resetTimeItem.setItemMeta(meta);
 
         resetPercentageItem = new ItemStack(Material.STONE_PICKAXE);
         meta = resetPercentageItem.getItemMeta();
         assert meta != null;
         meta.setDisplayName(Colors.conv("&eChange Reset Percentage"));
-        meta.setLore(Collections.singletonList(Colors.conv("&7Click here to change")));
+        meta.setLore(Colors.conv(Arrays.asList(
+                "&7Click here to change",
+                "&7Current value: &a{val}%"
+        )));
         meta.removeItemFlags(ItemFlag.values());
         resetPercentageItem.setItemMeta(meta);
 
@@ -88,17 +106,17 @@ public class MineGUI implements ClickableMenu {
         isDirty = false;
         update();
 
-        inventory.setItem(3, nameItem);
-        inventory.setItem(4, spawnLocItem);
-        inventory.setItem(5, resetTimeItem);
-        inventory.setItem(6, resetPercentageItem);
-        inventory.setItem(7, maxWeightItem);
-        inventory.setItem(8, resetNowItem);
+        updateSettingsItems();
+        inventory.setItem(resetNowItemSlot, resetNowItem);
     }
 
+    /**
+     * Updates the contents and items with information about the contents
+     */
     public void update() {
         updateContents();
         updateClickHelpItem();
+        updateMaxWeightItem();
     }
 
     /**
@@ -145,6 +163,78 @@ public class MineGUI implements ClickableMenu {
         inventory.setItem(0, itemStack);
     }
 
+    public void updateSettingsItems() {
+        updateNameItem();
+        updateSpawnLocItem();
+        updateResetTimeItem();
+        updateResetPercentageItem();
+    }
+
+    public void updateNameItem() {
+        ItemStack itemStack = nameItem.clone();
+        ItemMeta meta = itemStack.getItemMeta();
+        assert meta != null;
+        ArrayList<String> lore = new ArrayList<>();
+        for (String s : Objects.requireNonNull(meta.getLore())) {
+            lore.add(s.replace("{val}", mine.getName()));
+        }
+        meta.setLore(lore);
+        itemStack.setItemMeta(meta);
+        inventory.setItem(nameItemSlot, itemStack);
+    }
+
+    public void updateSpawnLocItem() {
+        ItemStack itemStack = spawnLocItem.clone();
+        ItemMeta meta = itemStack.getItemMeta();
+        assert meta != null;
+        ArrayList<String> lore = new ArrayList<>();
+        for (String s : Objects.requireNonNull(meta.getLore())) {
+            lore.add(s.replace("{val}", mine.hasSpawnLocation() ? Colors.conv("&aYes") : Colors.conv("&aNo")));
+        }
+        meta.setLore(lore);
+        itemStack.setItemMeta(meta);
+        inventory.setItem(spawnLocItemSlot, itemStack);
+    }
+
+    public void updateResetTimeItem() {
+        ItemStack itemStack = resetTimeItem.clone();
+        ItemMeta meta = itemStack.getItemMeta();
+        assert meta != null;
+        ArrayList<String> lore = new ArrayList<>();
+        for (String s : Objects.requireNonNull(meta.getLore())) {
+            lore.add(s.replace("{val}", Numbers.getTimeFormatted(mine.getResetLengthSeconds())));
+        }
+        meta.setLore(lore);
+        itemStack.setItemMeta(meta);
+        inventory.setItem(resetTimeItemSlot, itemStack);
+    }
+
+    public void updateResetPercentageItem() {
+        ItemStack itemStack = resetPercentageItem.clone();
+        ItemMeta meta = itemStack.getItemMeta();
+        assert meta != null;
+        ArrayList<String> lore = new ArrayList<>();
+        for (String s : Objects.requireNonNull(meta.getLore())) {
+            lore.add(s.replace("{val}", String.valueOf(mine.getResetPercentage())));
+        }
+        meta.setLore(lore);
+        itemStack.setItemMeta(meta);
+        inventory.setItem(resetPercentageItemSlot, itemStack);
+    }
+
+    public void updateMaxWeightItem() {
+        ItemStack itemStack = maxWeightItem.clone();
+        ItemMeta meta = itemStack.getItemMeta();
+        assert meta != null;
+        ArrayList<String> lore = new ArrayList<>();
+        for (String s : Objects.requireNonNull(meta.getLore())) {
+            lore.add(s.replace("{val}", String.valueOf(mine.getContents().getMaxWeight())));
+        }
+        meta.setLore(lore);
+        itemStack.setItemMeta(meta);
+        inventory.setItem(maxWeightItemSlot, itemStack);
+    }
+
     @Override
     public void openInventory(Player player) {
         player.openInventory(inventory);
@@ -179,12 +269,7 @@ public class MineGUI implements ClickableMenu {
                         break;
                     case 4:
                         Location l = e.getWhoClicked().getLocation();
-                        tc.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pmine setSpawnLocation " + mine.getId() + " " +
-                                Numbers.round(l.getX(), 1) + " " +
-                                Numbers.round(l.getY(), 4) + " " +
-                                Numbers.round(l.getZ(), 1) + " " +
-                                Numbers.round(l.getYaw(), 0) + " " +
-                                Numbers.round(l.getPitch(), 0)));
+                        tc.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pmine setSpawnLocation " + mine.getId() + " snap"));
                         break;
                     case 5:
                         player.closeInventory();
@@ -207,7 +292,7 @@ public class MineGUI implements ClickableMenu {
             }
             else if (e.getSlot() == 8) {
                 Sounds.generalClickSound.playSound(player);
-                mine.resetMine();
+                mine.resetMine(true);
                 e.getWhoClicked().sendMessage(ChatColor.GREEN + "Resetting " + mine.getName());
                 return;
             }
