@@ -217,6 +217,8 @@ public class Mine {
 
         if (contents.isBlank()) return;
 
+        double percentRemaining = getPercentRemaining();
+
         com.sk89q.worldedit.world.World w = BukkitAdapter.adapt(world);
         CuboidRegion selection = new CuboidRegion(w, min, max);
 
@@ -234,7 +236,7 @@ public class Mine {
             editSession.setBlocks(selection, pat);
 
             numSolidBlocks = volume;
-            Bukkit.getScheduler().runTask(PrisonMines.getInstance(), () -> Bukkit.getPluginManager().callEvent(new MinePostResetEvent(this)));
+            Bukkit.getScheduler().runTask(PrisonMines.getInstance(), () -> Bukkit.getPluginManager().callEvent(new MinePostResetEvent(this, percentRemaining)));
             teleportContainedPlayersToSpawn();
 
         } catch (MaxChangedBlocksException ex) {
@@ -247,7 +249,6 @@ public class Mine {
      */
     public void clearMine() {
         com.sk89q.worldedit.world.World w = BukkitAdapter.adapt(world);
-        CuboidRegion selection = new CuboidRegion(w, min, max);
 
         try (EditSession editSession = WorldEdit.getInstance().newEditSession(w)) {
             RandomPattern pat = new RandomPattern();

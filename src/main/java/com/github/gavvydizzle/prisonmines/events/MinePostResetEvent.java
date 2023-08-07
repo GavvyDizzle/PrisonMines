@@ -12,9 +12,11 @@ public class MinePostResetEvent extends Event {
 
     private static final HandlerList HANDLERS = new HandlerList();
     private final Mine mine;
+    private final double percentRemaining;
 
-    public MinePostResetEvent(Mine mine) {
+    public MinePostResetEvent(Mine mine, double percentRemaining) {
         this.mine = mine;
+        this.percentRemaining = percentRemaining;
     }
 
     public static HandlerList getHandlerList() {
@@ -29,5 +31,9 @@ public class MinePostResetEvent extends Event {
 
     public Mine getMine() {
         return mine;
+    }
+
+    public double getPercentRemaining() {
+        return percentRemaining;
     }
 }
