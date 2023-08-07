@@ -84,6 +84,7 @@ public class MineManager implements Listener {
         FileConfiguration config = instance.getConfig();
         config.options().copyDefaults(true);
         config.addDefault("resetWhenMineFull", false);
+        config.addDefault("resetOnServerStart", false);
         config.addDefault("removeDroppedItemsOnMineReset", true);
         config.addDefault("resetMessageSeconds", Arrays.asList(10, 5, 1));
         instance.saveConfig();
@@ -101,6 +102,9 @@ public class MineManager implements Listener {
         }
 
         loadMines();
+        if (config.getBoolean("resetOnServerStart")) {
+            resetAllMines();
+        }
     }
 
     /**
