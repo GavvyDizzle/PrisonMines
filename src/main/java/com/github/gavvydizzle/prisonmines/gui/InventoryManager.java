@@ -26,15 +26,6 @@ public class InventoryManager implements Listener {
         mineListGUI.reload();
     }
 
-    /**
-     * Saves the menu the player opened so clicks can be passed to it correctly
-     * @param player The player
-     * @param clickableMenu The menu they opened
-     */
-    public void onMenuOpen(Player player, ClickableMenu clickableMenu) {
-        playersInInventory.put(player.getUniqueId(), clickableMenu);
-    }
-
     @EventHandler
     private void onInventoryClose(InventoryCloseEvent e) {
        ClickableMenu clickableMenu = playersInInventory.remove(e.getPlayer().getUniqueId());
@@ -86,8 +77,18 @@ public class InventoryManager implements Listener {
      * @param clickableMenu The menu to open
      */
     public void openMenu(Player player, ClickableMenu clickableMenu) {
-        onMenuOpen(player, clickableMenu);
         clickableMenu.openInventory(player);
+        playersInInventory.put(player.getUniqueId(), clickableMenu);
+    }
+
+    /**
+     * Opens the given menu and adds the player to the list of players with opened menus
+     * @param player The player
+     * @param mineGUI The mine menu to open
+     */
+    public void openMineMenuFromAdminPanel(Player player, MineGUI mineGUI) {
+        mineGUI.openInventory(player, true);
+        playersInInventory.put(player.getUniqueId(), mineGUI);
     }
 
     public MineListGUI getMineListGUI() {

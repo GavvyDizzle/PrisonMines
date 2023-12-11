@@ -56,7 +56,7 @@ public class OpenMinePanelCommand extends SubCommand implements PermissionComman
         if (!(sender instanceof Player)) return;
 
         if (args.length == 1) {
-            inventoryManager.getMineListGUI().openInventory((Player) sender);
+            inventoryManager.openMenu((Player) sender, inventoryManager.getMineListGUI());
             return;
         }
 

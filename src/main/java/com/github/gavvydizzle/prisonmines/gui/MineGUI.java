@@ -1,17 +1,16 @@
 package com.github.gavvydizzle.prisonmines.gui;
 
-import com.github.mittenmc.serverutils.Colors;
-import com.github.mittenmc.serverutils.Numbers;
 import com.github.gavvydizzle.prisonmines.PrisonMines;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.contents.MineBlock;
 import com.github.gavvydizzle.prisonmines.mines.contents.WeightChangeResult;
 import com.github.gavvydizzle.prisonmines.utils.Sounds;
+import com.github.mittenmc.serverutils.Colors;
+import com.github.mittenmc.serverutils.Numbers;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -21,10 +20,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Objects;
+import java.util.*;
 
 public class MineGUI implements ClickableMenu {
 
@@ -34,8 +30,6 @@ public class MineGUI implements ClickableMenu {
 
     static {
         component = new TextComponent(TextComponent.fromLegacyText(Colors.conv("&7(!) Click here for command (!)")));
-
-        //TODO - Show current values in all of the items where applicable
 
         spawnLocItem = new ItemStack(Material.OAK_DOOR);
         ItemMeta meta = spawnLocItem.getItemMeta();
@@ -99,11 +93,13 @@ public class MineGUI implements ClickableMenu {
     private final Inventory inventory;
     private final Mine mine;
     private boolean isDirty;
+    private final Set<UUID> enteredFromListMenu;
 
     public MineGUI(Mine mine) {
         this.mine = mine;
         inventory = Bukkit.createInventory(null, 54, mine.getId() + " Contents");
         isDirty = false;
+        enteredFromListMenu = new HashSet<>();
         update();
 
         updateSettingsItems();
@@ -240,8 +236,19 @@ public class MineGUI implements ClickableMenu {
         player.openInventory(inventory);
     }
 
+    public void openInventory(Player player, boolean openedFromListMenu) {
+        if (openedFromListMenu) enteredFromListMenu.add(player.getUniqueId());
+        player.openInventory(inventory);
+    }
+
     @Override
     public void closeInventory(Player player) {
+        if (enteredFromListMenu.remove(player.getUniqueId())) {
+            InventoryManager inventoryManager = PrisonMines.getInstance().getInventoryManager();
+            Bukkit.getScheduler().scheduleSyncDelayedTask(PrisonMines.getInstance(), () ->
+                    inventoryManager.openMenu(player, inventoryManager.getMineListGUI()), 0);
+        }
+
         saveIfDirty();
     }
 
@@ -268,7 +275,6 @@ public class MineGUI implements ClickableMenu {
                         tc.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pmine setName " + mine.getId() + " "));
                         break;
                     case 4:
-                        Location l = e.getWhoClicked().getLocation();
                         tc.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pmine setSpawnLocation " + mine.getId() + " snap"));
                         break;
                     case 5:
@@ -285,8 +291,10 @@ public class MineGUI implements ClickableMenu {
                         tc.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pmine setMaxWeight " + mine.getId() + " "));
                         break;
                 }
-
                 e.getWhoClicked().spigot().sendMessage(tc);
+
+                // Remove the player from this list so command prompting does not trigger the list menu to open
+                enteredFromListMenu.remove(player.getUniqueId());
                 e.getWhoClicked().closeInventory();
                 return;
             }
