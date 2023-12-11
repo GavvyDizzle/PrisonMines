@@ -32,7 +32,7 @@ public class MessagesConfig {
             fileConfiguration.save(file);
         }
         catch (IOException e) {
-            System.out.println("Could not save file");
+            PrisonMines.getInstance().getLogger().severe("Could not save file messages.yml");
         }
     }
 
