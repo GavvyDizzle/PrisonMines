@@ -330,12 +330,17 @@ public class MineContents {
 
     /**
      * If any changes have been done to the block list, this will sort the block list.
+     * It will also update the mine's display item for the admin list menu.
      * @return The block list sorted by weight
      */
     public ArrayList<MineBlock> getSortedBlockList() {
         if (hasChanged) {
             hasChanged = false;
             sortBlockList();
+
+            // Tell the mine's GUI item and the list menu to update on the next request
+            mine.setUpdateItemFlag();
+            PrisonMines.getInstance().getInventoryManager().getMineListGUI().setUpdateFlag();
         }
         return sortedBlockList;
     }

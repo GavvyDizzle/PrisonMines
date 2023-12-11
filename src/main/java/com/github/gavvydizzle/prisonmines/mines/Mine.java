@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 public class Mine {
@@ -62,6 +63,7 @@ public class Mine {
     private int nextResetTick;
     private ItemStack guiItem;
     private boolean resetTimeChanged; // If the reset time has been edited because to the reset percentage has been reached
+    private boolean updateItemFlag;
 
     /**
      * Creates a new mine from two Locations
@@ -195,8 +197,15 @@ public class Mine {
         return player.hasPermission(accessPermission);
     }
 
+    /**
+     * Updates the GUI item for this mine to be the most common block in the mine
+     */
     private void createGUIItem() {
-        guiItem = new ItemStack(Material.STONE);
+        Material material = Material.BEDROCK;
+        List<MineBlock> mineBlocks = contents.getSortedBlockList();
+        if (!mineBlocks.isEmpty()) material = mineBlocks.get(0).getMaterial();
+
+        guiItem = new ItemStack(material);
         ItemMeta meta = guiItem.getItemMeta();
         assert meta != null;
         meta.setDisplayName(Colors.conv("&e" + id));
@@ -632,7 +641,15 @@ public class Mine {
     }
 
     public ItemStack getGuiItem() {
+        if (updateItemFlag) {
+            updateItemFlag = false;
+            createGUIItem();
+        }
         return guiItem;
+    }
+
+    public void setUpdateItemFlag() {
+        updateItemFlag = true;
     }
 
     public CuboidRegion getRegion() {

@@ -1,11 +1,10 @@
 package com.github.gavvydizzle.prisonmines.gui;
 
-import com.github.mittenmc.serverutils.ColoredItems;
-import com.github.gavvydizzle.prisonmines.PrisonMines;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineIdSorter;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
 import com.github.gavvydizzle.prisonmines.utils.Sounds;
+import com.github.mittenmc.serverutils.ColoredItems;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -61,6 +60,7 @@ public class MineListGUI implements ClickableMenu {
     private final ArrayList<Mine> mines;
     private final ArrayList<ItemStack> mineItems;
     private final HashMap<UUID, Integer> playerPages;
+    private boolean updateContentsFlag;
 
     public MineListGUI(InventoryManager inventoryManager, MineManager mineManager) {
         this.mineIdSorter = new MineIdSorter();
@@ -71,6 +71,8 @@ public class MineListGUI implements ClickableMenu {
         mines = new ArrayList<>();
         mineItems = new ArrayList<>();
         playerPages = new HashMap<>();
+
+        updateContentsFlag = false;
 
         reload();
     }
@@ -83,6 +85,11 @@ public class MineListGUI implements ClickableMenu {
 
     @Override
     public void openInventory(Player player) {
+        if (updateContentsFlag) {
+            updateContentsFlag = false;
+            updateMineItems();
+        }
+
         Inventory inventory = Bukkit.createInventory(player, inventorySize, inventoryName);
 
         for (int slot = 0; slot < getNumItemsOnPage(1); slot++) {
@@ -95,7 +102,6 @@ public class MineListGUI implements ClickableMenu {
         inventory.setItem(pageInfoSlot, getPageItem(1));
         inventory.setItem(pageUpSlot, nextPageItem);
 
-        inventoryManager.onMenuOpen(player, this);
         playerPages.put(player.getUniqueId(), 1);
         player.openInventory(inventory);
     }
@@ -131,11 +137,7 @@ public class MineListGUI implements ClickableMenu {
 
             if (mine == null) return;
 
-            e.getWhoClicked().closeInventory();
-            Bukkit.getScheduler().scheduleSyncDelayedTask(PrisonMines.getInstance(), () -> {
-                inventoryManager.openMenu((Player) e.getWhoClicked(), mine.getMineGUI());
-                playerPages.remove(e.getWhoClicked().getUniqueId());
-            });
+            inventoryManager.openMineMenuFromAdminPanel((Player) e.getWhoClicked(), mine.getMineGUI());
             Sounds.generalClickSound.playSound((Player) e.getWhoClicked());
         }
     }
@@ -177,7 +179,9 @@ public class MineListGUI implements ClickableMenu {
     }
 
 
-    // Recreates the list of mine items
+    /**
+     * Reloads the items to show in this menu
+     */
     private void updateMineItems() {
         mineItems.clear();
         for (Mine mine : mines) {
@@ -212,5 +216,9 @@ public class MineListGUI implements ClickableMenu {
     public void removeMine(Mine mine) {
         mines.remove(mine);
         updateMineItems();
+    }
+
+    public void setUpdateFlag() {
+        updateContentsFlag = true;
     }
 }
