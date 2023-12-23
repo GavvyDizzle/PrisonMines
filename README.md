@@ -35,7 +35,8 @@ A lightweight and simple mines plugin for your Spigot server
  - `/pmine panel [id]` Opens a menu displaying all mines or a mine's panel
  - `/pmine pauseResetting <id>` Toggle the mine's ability to reset
  - `/pmine reload [arg]` Reload the whole plugin or a specified part
- - `/pmine reset <id|all>` Reset all or one mine
+ - `/pmine reset <id|all> [multiplier]` Reset all or one mine
+   - The multiplier argument is only parsed when `all` is given. This is the minimum bound for the random reset time
  - `/pmine resize <id>` Update the mine's region to your WorldGuard selection
  - `/pmine setMaxWeight <id> <weight>` Updates a mine's max weight
  - `/pmine setName <id> <name>` Updates a mine's display name

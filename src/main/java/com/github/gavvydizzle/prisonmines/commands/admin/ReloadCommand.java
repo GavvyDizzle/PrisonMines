@@ -105,7 +105,7 @@ public class ReloadCommand extends SubCommand implements PermissionCommand {
 
     private void reloadMines() {
         PrisonMines.getInstance().getInventoryManager().closeAllMenus();
-        PrisonMines.getInstance().getMineManager().reload();
+        PrisonMines.getInstance().getMineManager().reload(false);
         PrisonMines.getInstance().getInventoryManager().reload();
     }
 }

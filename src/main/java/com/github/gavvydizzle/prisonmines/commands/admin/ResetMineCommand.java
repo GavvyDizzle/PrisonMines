@@ -3,6 +3,7 @@ package com.github.gavvydizzle.prisonmines.commands.admin;
 import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
+import com.github.mittenmc.serverutils.Numbers;
 import com.github.mittenmc.serverutils.PermissionCommand;
 import com.github.mittenmc.serverutils.SubCommand;
 import org.bukkit.ChatColor;
@@ -39,7 +40,7 @@ public class ResetMineCommand extends SubCommand implements PermissionCommand {
 
     @Override
     public String getSyntax() {
-        return "/" + adminCommandManager.getCommandDisplayName() + " reset <id|all>";
+        return "/" + adminCommandManager.getCommandDisplayName() + " reset <id|all> [multiplier]";
     }
 
     @Override
@@ -55,8 +56,26 @@ public class ResetMineCommand extends SubCommand implements PermissionCommand {
         }
 
         if (args[1].equalsIgnoreCase("all")) {
-            mineManager.resetAllMines();
-            sender.sendMessage(ChatColor.GREEN + "Resetting all mines. Each reset is delayed by " + MineManager.RESET_ALL_TICK_INTERVAL + " ticks");
+            if (args.length >= 3) {
+                double multiplier;
+                try {
+                    multiplier = Double.parseDouble(args[2]);
+                } catch (Exception e) {
+                    sender.sendMessage(ChatColor.RED + "Invalid multiplier: " + args[2]);
+                    return;
+                }
+                if (!Numbers.isWithinRange(multiplier, 0, 1)) {
+                    sender.sendMessage(ChatColor.RED + "Invalid multiplier: " + args[2] + ". It must be between 0 and 1");
+                    return;
+                }
+
+                mineManager.resetAllMines(multiplier);
+                sender.sendMessage(ChatColor.GREEN + "Resetting all mines and randomized their timers. Each reset is delayed by " + MineManager.RESET_ALL_TICK_INTERVAL + " ticks");
+            }
+            else {
+                mineManager.resetAllMines();
+                sender.sendMessage(ChatColor.GREEN + "Resetting all mines. Each reset is delayed by " + MineManager.RESET_ALL_TICK_INTERVAL + " ticks");
+            }
             return;
         }
 

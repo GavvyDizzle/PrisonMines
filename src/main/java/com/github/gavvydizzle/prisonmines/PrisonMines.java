@@ -9,9 +9,11 @@ import com.github.gavvydizzle.prisonmines.papi.MyExpansion;
 import com.github.gavvydizzle.prisonmines.utils.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
+import java.util.logging.Handler;
 
 public final class PrisonMines extends JavaPlugin {
 

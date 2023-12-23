@@ -54,7 +54,7 @@ public class MineManager implements Listener {
         taggedBlocks = new HashSet<>();
         resetMessageSeconds = new HashSet<>();
 
-        reload();
+        reload(true);
         startResetClock();
     }
 
@@ -80,13 +80,16 @@ public class MineManager implements Listener {
     /**
      * Reloads the main config.yml and reloads all mines with the loadMines() method
      */
-    public void reload() {
+    public void reload(boolean firstLoad) {
         FileConfiguration config = instance.getConfig();
         config.options().copyDefaults(true);
-        config.addDefault("resetWhenMineFull", false);
-        config.addDefault("resetOnServerStart", false);
-        config.addDefault("removeDroppedItemsOnMineReset", true);
+        config.addDefault("resetOnServerStart.enabled", false);
+        config.addDefault("resetOnServerStart.randomizeTime.enabled", false);
+        config.addDefault("resetOnServerStart.randomizeTime.min", 0.1);
         config.addDefault("resetMessageSeconds", Arrays.asList(10, 5, 1));
+        config.addDefault("removeDroppedItemsOnMineReset", true);
+        config.addDefault("disableMineCommand", false);
+        config.addDefault("resetWhenMineFull", false);
         instance.saveConfig();
 
         resetWhenMineFull = config.getBoolean("resetWhenMineFull");
@@ -102,8 +105,13 @@ public class MineManager implements Listener {
         }
 
         loadMines();
-        if (config.getBoolean("resetOnServerStart")) {
-            resetAllMines();
+        if (firstLoad && config.getBoolean("resetOnServerStart.enabled")) {
+            if (config.getBoolean("resetOnServerStart.randomizeTime.enabled")) {
+                resetAllMines(config.getInt("resetOnServerStart.randomizeTime.min"));
+            }
+            else {
+                resetAllMines();
+            }
         }
     }
 
@@ -177,6 +185,33 @@ public class MineManager implements Listener {
                 // This mine will be skipped in the event that it was deleted
                 if (mines.containsKey(arr.get(i).getId())) {
                     arr.get(i++).resetMine(true);
+                }
+            }
+        };
+    }
+
+    /**
+     * Resets all mines with a short delay between resets.
+     * The reset time of all mine will be randomly chosen within the range [multiplier*time, time]
+     * @param multiplier The amount to multiply the time by to get the minimum bound
+     */
+    public void resetAllMines(double multiplier) {
+        new RepeatingTask(instance, 0, RESET_ALL_TICK_INTERVAL) {
+
+            final ArrayList<Mine> arr = new ArrayList<>(mines.values());
+            int i = 0;
+
+            @Override
+            public void run() {
+                if (i >= arr.size()) {
+                    cancel();
+                    return;
+                }
+
+                // Checks if the mine is still loaded
+                // This mine will be skipped in the event that it was deleted
+                if (mines.containsKey(arr.get(i).getId())) {
+                    arr.get(i++).resetMine(true, multiplier);
                 }
             }
         };

@@ -1,3 +1,9 @@
+# Settings to enable a mine reset on server start
+resetOnServerStart:
+  enabled: true
+  randomizeTime: # Options to randomize the time for this setting
+    enabled: true
+    min: 0.1 # value*reset_time is the lowest it will go (with a hard-coded minimum of 10 seconds)
 # Removes dropped items in the mine region
 # Stops blocks from appearing on the top of the mine after a reset
 removeDroppedItemsOnMineReset: true

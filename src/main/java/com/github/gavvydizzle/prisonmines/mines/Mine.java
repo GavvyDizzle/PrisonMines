@@ -254,6 +254,47 @@ public class Mine {
     }
 
     /**
+     * Resets this mine by replacing all blocks in the mine.
+     * Calling this method schedules the next reset as well.
+     * If a paused mine resets then its timer resumes.
+     * @param resumeFromPause If a paused timer should be resumed
+     * @param multiplier The multiplier used to determine the minimum bound of the random time remaining
+     */
+    public void resetMine(boolean resumeFromPause, double multiplier) {
+        updateNextResetTick((int) Numbers.randomNumber(resetLengthSeconds * multiplier, resetLengthSeconds));
+        resetTimeChanged = false;
+        if (resumeFromPause) isResettingPaused = false;
+
+        if (contents.isBlank()) return;
+
+        double percentRemaining = getPercentRemaining();
+
+        com.sk89q.worldedit.world.World w = BukkitAdapter.adapt(world);
+        CuboidRegion selection = new CuboidRegion(w, min, max);
+
+        try (EditSession editSession = WorldEdit.getInstance().newEditSession(w)) {
+            RandomPattern pat = new RandomPattern();
+
+            // Make the various WorldEdit block states by using the BukkitAdapter from the spigot block data
+            for (MineBlock mineBlock : contents.getBlockList()) {
+                if (mineBlock.getWeight() > 0) {
+                    pat.add(BukkitAdapter.adapt(mineBlock.getMaterial().createBlockData()), mineBlock.getWeight());
+                }
+            }
+
+            // Pass in the region and pattern
+            editSession.setBlocks(selection, pat);
+
+            numSolidBlocks = volume;
+            Bukkit.getScheduler().runTask(PrisonMines.getInstance(), () -> Bukkit.getPluginManager().callEvent(new MinePostResetEvent(this, percentRemaining)));
+            teleportContainedPlayersToSpawn();
+
+        } catch (MaxChangedBlocksException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
      * Sets all blocks in the mine to air
      */
     public void clearMine() {
@@ -597,6 +638,15 @@ public class Mine {
     }
 
     public void updateNextResetTick() {
+        nextResetTick = PrisonMines.getInstance().getMineManager().getTick() + resetLengthSeconds;
+    }
+
+    /**
+     * Updates the reset time of this mine and keeps the value within an acceptable range
+     * @param resetLengthSeconds The time until the next reset in seconds
+     */
+    public void updateNextResetTick(int resetLengthSeconds) {
+        resetLengthSeconds = Numbers.constrain(resetLengthSeconds, 11, this.resetLengthSeconds);
         nextResetTick = PrisonMines.getInstance().getMineManager().getTick() + resetLengthSeconds;
     }
 
