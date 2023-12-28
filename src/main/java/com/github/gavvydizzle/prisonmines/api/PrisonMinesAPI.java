@@ -131,4 +131,23 @@ public class PrisonMinesAPI {
             mineManager.addBlock(b);
         }
     }
+
+    /**
+     * Gets the amount of seconds remaining until this mine resets next.
+     * @param id The mine's ID
+     * @return The time until reset or -1 if this ID is not a mine
+     */
+    public int getSecondsUntilReset(String id) {
+        return getSecondsUntilReset(getMineByID(id));
+    }
+
+    /**
+     * Gets the amount of seconds remaining until this mine resets next.
+     * @param mine The mine
+     * @return The time until reset or -1 if this mine is null
+     */
+    public int getSecondsUntilReset(@Nullable Mine mine) {
+        if (mine == null) return -1;
+        return mineManager.getSecondsUntilNextReset(mine);
+    }
 }
