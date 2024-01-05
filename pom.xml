@@ -82,7 +82,7 @@
         <dependency>
             <groupId>com.github.mittenmc</groupId>
             <artifactId>ServerUtils</artifactId>
-            <version>1.0.6</version>
+            <version>1.0.7</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

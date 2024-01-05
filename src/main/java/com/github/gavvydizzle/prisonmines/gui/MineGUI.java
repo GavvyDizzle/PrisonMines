@@ -1,6 +1,7 @@
 package com.github.gavvydizzle.prisonmines.gui;
 
 import com.github.gavvydizzle.prisonmines.PrisonMines;
+import com.github.gavvydizzle.prisonmines.gui.anvil.AnvilInputGUI;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.contents.MineBlock;
 import com.github.gavvydizzle.prisonmines.mines.contents.WeightChangeResult;
@@ -270,31 +271,28 @@ public class MineGUI implements ClickableMenu {
 
                 Sounds.generalClickSound.playSound(player);
 
+                // Remove the player from this list so command prompting does not trigger the list menu to open
+                enteredFromListMenu.remove(player.getUniqueId());
+
                 switch (e.getSlot()) {
                     case 3:
-                        tc.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pmine setName " + mine.getId() + " "));
-                        break;
+                        PrisonMines.getInstance().getInventoryManager().openAnvilEditMenu(player, AnvilInputGUI.EditType.NAME, mine);
+                        return;
                     case 4:
                         tc.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pmine setSpawnLocation " + mine.getId() + " snap"));
                         break;
                     case 5:
-                        player.closeInventory();
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(PrisonMines.getInstance(),
-                                () -> PrisonMines.getInstance().getInventoryManager().openMenu(player, mine.getResetTimeMenu()));
+                        PrisonMines.getInstance().getInventoryManager().openAnvilEditMenu(player, AnvilInputGUI.EditType.RESET_TIME, mine);
                         return;
                     case 6:
-                        player.closeInventory();
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(PrisonMines.getInstance(),
-                                () -> PrisonMines.getInstance().getInventoryManager().openMenu(player, mine.getResetPercentageMenu()));
+                        PrisonMines.getInstance().getInventoryManager().openAnvilEditMenu(player, AnvilInputGUI.EditType.RESET_PERCENTAGE, mine);
                         return;
                     case 7:
-                        tc.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pmine setMaxWeight " + mine.getId() + " "));
-                        break;
+                        PrisonMines.getInstance().getInventoryManager().openAnvilEditMenu(player, AnvilInputGUI.EditType.MAX_WEIGHT, mine);
+                        return;
                 }
                 e.getWhoClicked().spigot().sendMessage(tc);
 
-                // Remove the player from this list so command prompting does not trigger the list menu to open
-                enteredFromListMenu.remove(player.getUniqueId());
                 e.getWhoClicked().closeInventory();
                 return;
             }

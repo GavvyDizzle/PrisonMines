@@ -16,7 +16,7 @@ A lightweight and simple mines plugin for your Spigot server
  - Each mine is saved using its own file in the `/PrisonMines/mines` folder
  - All settings can be changed in-game using commands and the mine panel
  - If you wish to make manual edits, you need to reload the plugin after saving the mine's file
- - If there is a syntax error in your file, it will be reverted to a default state and all changes will be lost. It is advised that you make a backup before trying to load manual changed
+ - If there is a syntax error in your file, it will be reverted to a default state and all changes will be lost. It is advised that you make a backup before trying to load manual changes
 
 ### Commands
  - The only player command is `/mine <id>` which allows players to teleport to the mine's spawn. This command can be disabled through config.yml

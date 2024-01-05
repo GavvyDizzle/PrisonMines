@@ -1,5 +1,6 @@
 package com.github.gavvydizzle.prisonmines.gui;
 
+import com.github.gavvydizzle.prisonmines.gui.anvil.AnvilInputGUI;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
 import org.bukkit.Bukkit;
@@ -15,10 +16,12 @@ import java.util.UUID;
 public class InventoryManager implements Listener {
 
     private final MineListGUI mineListGUI;
+    private final AnvilInputGUI anvilInputGUI;
     private final HashMap<UUID, ClickableMenu> playersInInventory;
 
     public InventoryManager(MineManager mineManager) {
         mineListGUI = new MineListGUI(this, mineManager);
+        anvilInputGUI = new AnvilInputGUI(this);
         playersInInventory = new HashMap<>();
     }
 
@@ -72,6 +75,15 @@ public class InventoryManager implements Listener {
     }
 
     /**
+     * Saves the menu the player opened so clicks can be passed to it correctly
+     * @param player The player
+     * @param clickableMenu The menu they opened
+     */
+    public void onMenuOpen(Player player, ClickableMenu clickableMenu) {
+        playersInInventory.put(player.getUniqueId(), clickableMenu);
+    }
+
+    /**
      * Opens the given menu and adds the player to the list of players with opened menus
      * @param player The player
      * @param clickableMenu The menu to open
@@ -91,8 +103,18 @@ public class InventoryManager implements Listener {
         playersInInventory.put(player.getUniqueId(), mineGUI);
     }
 
+    /**
+     * Opens the anvil editor
+     * @param player The player
+     * @param editType The type they are editing
+     * @param mine The mine
+     */
+    public void openAnvilEditMenu(Player player, AnvilInputGUI.EditType editType, Mine mine) {
+        anvilInputGUI.openInventory(player, editType, mine);
+        playersInInventory.put(player.getUniqueId(), anvilInputGUI);
+    }
+
     public MineListGUI getMineListGUI() {
         return mineListGUI;
     }
-
 }

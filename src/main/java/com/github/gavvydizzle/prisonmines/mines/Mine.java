@@ -1,8 +1,9 @@
 package com.github.gavvydizzle.prisonmines.mines;
 
+import com.github.gavvydizzle.prisonmines.PrisonMines;
+import com.github.gavvydizzle.prisonmines.events.MinePostResetEvent;
 import com.github.gavvydizzle.prisonmines.gui.MineGUI;
-import com.github.gavvydizzle.prisonmines.gui.settings.ResetPercentageMenu;
-import com.github.gavvydizzle.prisonmines.gui.settings.ResetTimeMenu;
+import com.github.gavvydizzle.prisonmines.mines.contents.MineBlock;
 import com.github.gavvydizzle.prisonmines.mines.contents.MineContents;
 import com.github.mittenmc.serverutils.Colors;
 import com.github.mittenmc.serverutils.Numbers;
@@ -15,9 +16,6 @@ import com.sk89q.worldedit.function.pattern.RandomPattern;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
-import com.github.gavvydizzle.prisonmines.PrisonMines;
-import com.github.gavvydizzle.prisonmines.events.MinePostResetEvent;
-import com.github.gavvydizzle.prisonmines.mines.contents.MineBlock;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -52,8 +50,6 @@ public class Mine {
 
     // Dynamic properties
     private final MineGUI mineGUI;
-    private final ResetTimeMenu resetTimeMenu;
-    private final ResetPercentageMenu resetPercentageMenu;
     private int volume;
     private int numSolidBlocks;
     private boolean isResettingPaused;
@@ -91,8 +87,6 @@ public class Mine {
         this.world = world;
         contents = new MineContents(this);
         mineGUI = new MineGUI(this);
-        resetTimeMenu = new ResetTimeMenu(this);
-        resetPercentageMenu = new ResetPercentageMenu(this);
 
         file = new File(PrisonMines.getInstance().getDataFolder(), "mines/" + id + ".yml");
         config = YamlConfiguration.loadConfiguration(file);
@@ -172,8 +166,6 @@ public class Mine {
 
         contents = new MineContents(this, config.getStringList("contents.list"), config.getInt("contents.maxWeight"));
         mineGUI = new MineGUI(this);
-        resetTimeMenu = new ResetTimeMenu(this);
-        resetPercentageMenu = new ResetPercentageMenu(this);
 
         updateVolume();
         numSolidBlocks = volume;
@@ -680,14 +672,6 @@ public class Mine {
 
     public MineGUI getMineGUI() {
         return mineGUI;
-    }
-
-    public ResetTimeMenu getResetTimeMenu() {
-        return resetTimeMenu;
-    }
-
-    public ResetPercentageMenu getResetPercentageMenu() {
-        return resetPercentageMenu;
     }
 
     public ItemStack getGuiItem() {
