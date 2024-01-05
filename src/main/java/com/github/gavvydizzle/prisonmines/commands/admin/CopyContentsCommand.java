@@ -3,7 +3,6 @@ package com.github.gavvydizzle.prisonmines.commands.admin;
 import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
-import com.github.mittenmc.serverutils.PermissionCommand;
 import com.github.mittenmc.serverutils.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -13,39 +12,18 @@ import org.bukkit.util.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CopyContentsCommand extends SubCommand implements PermissionCommand {
+public class CopyContentsCommand extends SubCommand {
 
-    private final AdminCommandManager adminCommandManager;
     private final MineManager mineManager;
 
     public CopyContentsCommand(AdminCommandManager adminCommandManager, MineManager mineManager) {
-        this.adminCommandManager = adminCommandManager;
         this.mineManager = mineManager;
-    }
 
-    @Override
-    public String getPermission() {
-        return "prisonmines.mineadmin." + getName().toLowerCase();
-    }
-
-    @Override
-    public String getName() {
-        return "cloneContents";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Clone the block list from one mine to another";
-    }
-
-    @Override
-    public String getSyntax() {
-        return "/" + adminCommandManager.getCommandDisplayName() + " cloneContents <from> <to>";
-    }
-
-    @Override
-    public String getColoredSyntax() {
-        return ChatColor.YELLOW + "Usage: " + getSyntax();
+        setName("cloneContents");
+        setDescription("Clone the block list from one mine to another");
+        setSyntax("/" + adminCommandManager.getCommandDisplayName() + " cloneContents <from> <to>");
+        setColoredSyntax(ChatColor.YELLOW + getSyntax());
+        setPermission(adminCommandManager.getPermissionPrefix() + getName().toLowerCase());
     }
 
     @Override

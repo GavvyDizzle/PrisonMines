@@ -3,7 +3,6 @@ package com.github.gavvydizzle.prisonmines.commands.admin;
 import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
-import com.github.mittenmc.serverutils.PermissionCommand;
 import com.github.mittenmc.serverutils.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -12,39 +11,18 @@ import org.bukkit.util.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClearMineCommand extends SubCommand implements PermissionCommand {
+public class ClearMineCommand extends SubCommand {
 
-    private final AdminCommandManager adminCommandManager;
     private final MineManager mineManager;
 
     public ClearMineCommand(AdminCommandManager adminCommandManager, MineManager mineManager) {
-        this.adminCommandManager = adminCommandManager;
         this.mineManager = mineManager;
-    }
 
-    @Override
-    public String getPermission() {
-        return "prisonmines.mineadmin." + getName().toLowerCase();
-    }
-
-    @Override
-    public String getName() {
-        return "clear";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Set the mine to air";
-    }
-
-    @Override
-    public String getSyntax() {
-        return "/" + adminCommandManager.getCommandDisplayName() + " clear <id>";
-    }
-
-    @Override
-    public String getColoredSyntax() {
-        return ChatColor.YELLOW + "Usage: " + getSyntax();
+        setName("clear");
+        setDescription("Set the mine to air");
+        setSyntax("/" + adminCommandManager.getCommandDisplayName() + " clear <id>");
+        setColoredSyntax(ChatColor.YELLOW + getSyntax());
+        setPermission(adminCommandManager.getPermissionPrefix() + getName().toLowerCase());
     }
 
     @Override

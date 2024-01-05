@@ -4,7 +4,6 @@ import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
 import com.github.gavvydizzle.prisonmines.utils.Messages;
-import com.github.mittenmc.serverutils.PermissionCommand;
 import com.github.mittenmc.serverutils.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -14,39 +13,18 @@ import org.bukkit.util.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TeleportCenterCommand extends SubCommand implements PermissionCommand {
+public class TeleportCenterCommand extends SubCommand {
 
-    private final AdminCommandManager adminCommandManager;
     private final MineManager mineManager;
 
     public TeleportCenterCommand(AdminCommandManager adminCommandManager, MineManager mineManager) {
-        this.adminCommandManager = adminCommandManager;
         this.mineManager = mineManager;
-    }
 
-    @Override
-    public String getPermission() {
-        return "prisonmines.mineadmin." + getName().toLowerCase();
-    }
-
-    @Override
-    public String getName() {
-        return "tpCenter";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Teleport to a mine's center point";
-    }
-
-    @Override
-    public String getSyntax() {
-        return "/" + adminCommandManager.getCommandDisplayName() + " tpCenter <id>";
-    }
-
-    @Override
-    public String getColoredSyntax() {
-        return ChatColor.YELLOW + "Usage: " + getSyntax();
+        setName("tpCenter");
+        setDescription("Teleport to a mine's center point");
+        setSyntax("/" + adminCommandManager.getCommandDisplayName() + " tpCenter <id>");
+        setColoredSyntax(ChatColor.YELLOW + getSyntax());
+        setPermission(adminCommandManager.getPermissionPrefix() + getName().toLowerCase());
     }
 
     @Override

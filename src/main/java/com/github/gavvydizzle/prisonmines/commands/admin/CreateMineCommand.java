@@ -3,7 +3,6 @@ package com.github.gavvydizzle.prisonmines.commands.admin;
 import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
-import com.github.mittenmc.serverutils.PermissionCommand;
 import com.github.mittenmc.serverutils.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -13,39 +12,18 @@ import org.bukkit.util.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CreateMineCommand extends SubCommand implements PermissionCommand {
+public class CreateMineCommand extends SubCommand {
 
-    private final AdminCommandManager adminCommandManager;
     private final MineManager mineManager;
 
     public CreateMineCommand(AdminCommandManager adminCommandManager, MineManager mineManager) {
-        this.adminCommandManager = adminCommandManager;
         this.mineManager = mineManager;
-    }
 
-    @Override
-    public String getPermission() {
-        return "prisonmines.mineadmin." + getName().toLowerCase();
-    }
-
-    @Override
-    public String getName() {
-        return "create";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Create a new mine (optional: clone block list)";
-    }
-
-    @Override
-    public String getSyntax() {
-        return "/" + adminCommandManager.getCommandDisplayName() + " create <id> [copyID]";
-    }
-
-    @Override
-    public String getColoredSyntax() {
-        return ChatColor.YELLOW + "Usage: " + getSyntax();
+        setName("create");
+        setDescription("Create a new mine (optional: clone block list)");
+        setSyntax("/" + adminCommandManager.getCommandDisplayName() + " create <id> [copyID]");
+        setColoredSyntax(ChatColor.YELLOW + getSyntax());
+        setPermission(adminCommandManager.getPermissionPrefix() + getName().toLowerCase());
     }
 
     @Override

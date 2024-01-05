@@ -3,7 +3,6 @@ package com.github.gavvydizzle.prisonmines.commands.admin;
 import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
-import com.github.mittenmc.serverutils.PermissionCommand;
 import com.github.mittenmc.serverutils.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -12,39 +11,18 @@ import org.bukkit.util.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PauseMineResettingCommand extends SubCommand implements PermissionCommand {
+public class PauseMineResettingCommand extends SubCommand {
 
-    private final AdminCommandManager adminCommandManager;
     private final MineManager mineManager;
 
     public PauseMineResettingCommand(AdminCommandManager adminCommandManager, MineManager mineManager) {
-        this.adminCommandManager = adminCommandManager;
         this.mineManager = mineManager;
-    }
 
-    @Override
-    public String getPermission() {
-        return "prisonmines.mineadmin." + getName().toLowerCase();
-    }
-
-    @Override
-    public String getName() {
-        return "pauseResetting";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Toggle the mine's ability to reset";
-    }
-
-    @Override
-    public String getSyntax() {
-        return "/" + adminCommandManager.getCommandDisplayName() + " pauseResetting <id>";
-    }
-
-    @Override
-    public String getColoredSyntax() {
-        return ChatColor.YELLOW + "Usage: " + getSyntax();
+        setName("pauseResetting");
+        setDescription("Toggle the mine's ability to reset");
+        setSyntax("/" + adminCommandManager.getCommandDisplayName() + " pauseResetting <id>");
+        setColoredSyntax(ChatColor.YELLOW + getSyntax());
+        setPermission(adminCommandManager.getPermissionPrefix() + getName().toLowerCase());
     }
 
     @Override

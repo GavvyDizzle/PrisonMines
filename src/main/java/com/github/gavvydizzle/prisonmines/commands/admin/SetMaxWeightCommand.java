@@ -3,7 +3,6 @@ package com.github.gavvydizzle.prisonmines.commands.admin;
 import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
-import com.github.mittenmc.serverutils.PermissionCommand;
 import com.github.mittenmc.serverutils.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -13,40 +12,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SetMaxWeightCommand extends SubCommand implements PermissionCommand {
+public class SetMaxWeightCommand extends SubCommand {
 
-    private final AdminCommandManager adminCommandManager;
     private final MineManager mineManager;
     private final ArrayList<String> args2 = new ArrayList<>(Collections.singletonList("scale"));
 
     public SetMaxWeightCommand(AdminCommandManager adminCommandManager, MineManager mineManager) {
-        this.adminCommandManager = adminCommandManager;
         this.mineManager = mineManager;
-    }
 
-    @Override
-    public String getPermission() {
-        return "prisonmines.mineadmin." + getName().toLowerCase();
-    }
-
-    @Override
-    public String getName() {
-        return "setMaxWeight";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Set a mine's max weight";
-    }
-
-    @Override
-    public String getSyntax() {
-        return "/" + adminCommandManager.getCommandDisplayName() + " setMaxWeight <id> <weight> [scale]";
-    }
-
-    @Override
-    public String getColoredSyntax() {
-        return ChatColor.YELLOW + "Usage: " + getSyntax();
+        setName("setMaxWeight");
+        setDescription("Set a mine's max weight");
+        setSyntax("/" + adminCommandManager.getCommandDisplayName() + " setMaxWeight <id> <weight> [scale]");
+        setColoredSyntax(ChatColor.YELLOW + getSyntax());
+        setPermission(adminCommandManager.getPermissionPrefix() + getName().toLowerCase());
     }
 
     @Override

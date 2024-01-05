@@ -2,45 +2,26 @@ package com.github.gavvydizzle.prisonmines.commands.admin;
 
 import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.configs.CommandsConfig;
-import com.github.mittenmc.serverutils.PermissionCommand;
 import com.github.mittenmc.serverutils.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class AdminHelpCommand extends SubCommand implements PermissionCommand {
+public class AdminHelpCommand extends SubCommand {
 
     private final AdminCommandManager adminCommandManager;
 
     public AdminHelpCommand(AdminCommandManager adminCommandManager) {
         this.adminCommandManager = adminCommandManager;
-    }
 
-    @Override
-    public String getPermission() {
-        return "prisonmines.mineadmin." + getName().toLowerCase();
-    }
-
-    @Override
-    public String getName() {
-        return "help";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Opens this help menu";
-    }
-
-    @Override
-    public String getSyntax() {
-        return "/" + adminCommandManager.getCommandDisplayName() + " help";
-    }
-
-    @Override
-    public String getColoredSyntax() {
-        return ChatColor.YELLOW + "Usage: " + getSyntax();
+        setName("help");
+        setDescription("Opens this help menu");
+        setSyntax("/" + adminCommandManager.getCommandDisplayName() + " help");
+        setColoredSyntax(ChatColor.YELLOW + getSyntax());
+        setPermission(adminCommandManager.getPermissionPrefix() + getName().toLowerCase());
     }
 
     @Override
@@ -57,6 +38,6 @@ public class AdminHelpCommand extends SubCommand implements PermissionCommand {
 
     @Override
     public List<String> getSubcommandArguments(CommandSender sender, String[] args) {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 }

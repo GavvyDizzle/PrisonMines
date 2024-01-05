@@ -4,7 +4,6 @@ import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.gui.InventoryManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
-import com.github.mittenmc.serverutils.PermissionCommand;
 import com.github.mittenmc.serverutils.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -14,41 +13,20 @@ import org.bukkit.util.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OpenMinePanelCommand extends SubCommand implements PermissionCommand {
+public class OpenMinePanelCommand extends SubCommand {
 
-    private final AdminCommandManager adminCommandManager;
     private final MineManager mineManager;
     private final InventoryManager inventoryManager;
 
     public OpenMinePanelCommand(AdminCommandManager adminCommandManager, MineManager mineManager, InventoryManager inventoryManager) {
-        this.adminCommandManager = adminCommandManager;
         this.mineManager = mineManager;
         this.inventoryManager = inventoryManager;
-    }
 
-    @Override
-    public String getPermission() {
-        return "prisonmines.mineadmin." + getName().toLowerCase();
-    }
-
-    @Override
-    public String getName() {
-        return "panel";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Open the mine menu";
-    }
-
-    @Override
-    public String getSyntax() {
-        return "/" + adminCommandManager.getCommandDisplayName() + " panel [id]";
-    }
-
-    @Override
-    public String getColoredSyntax() {
-        return ChatColor.YELLOW + "Usage: " + getSyntax();
+        setName("panel");
+        setDescription("Open the mine menu");
+        setSyntax("/" + adminCommandManager.getCommandDisplayName() + " panel [id]");
+        setColoredSyntax(ChatColor.YELLOW + getSyntax());
+        setPermission(adminCommandManager.getPermissionPrefix() + getName().toLowerCase());
     }
 
     @Override

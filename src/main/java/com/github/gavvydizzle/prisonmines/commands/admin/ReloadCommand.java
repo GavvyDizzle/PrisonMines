@@ -6,7 +6,6 @@ import com.github.gavvydizzle.prisonmines.configs.CommandsConfig;
 import com.github.gavvydizzle.prisonmines.configs.MessagesConfig;
 import com.github.gavvydizzle.prisonmines.events.MinesReloadedEvent;
 import com.github.gavvydizzle.prisonmines.utils.Messages;
-import com.github.mittenmc.serverutils.PermissionCommand;
 import com.github.mittenmc.serverutils.SubCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -16,7 +15,7 @@ import org.bukkit.util.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReloadCommand extends SubCommand implements PermissionCommand {
+public class ReloadCommand extends SubCommand {
 
     private final AdminCommandManager adminCommandManager;
     private final ArrayList<String> argsList;
@@ -27,31 +26,12 @@ public class ReloadCommand extends SubCommand implements PermissionCommand {
         argsList.add("commands");
         argsList.add("messages");
         argsList.add("mines");
-    }
 
-    @Override
-    public String getPermission() {
-        return "prisonmines.mineadmin." + getName().toLowerCase();
-    }
-
-    @Override
-    public String getName() {
-        return "reload";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Reloads this plugin or a specified portion";
-    }
-
-    @Override
-    public String getSyntax() {
-        return "/" + adminCommandManager.getCommandDisplayName() + " reload [arg]";
-    }
-
-    @Override
-    public String getColoredSyntax() {
-        return ChatColor.YELLOW + "Usage: " + getSyntax();
+        setName("reload");
+        setDescription("Reloads this plugin or a specified portion");
+        setSyntax("/" + adminCommandManager.getCommandDisplayName() + " reload [arg]");
+        setColoredSyntax(ChatColor.YELLOW + getSyntax());
+        setPermission(adminCommandManager.getPermissionPrefix() + getName().toLowerCase());
     }
 
     @Override

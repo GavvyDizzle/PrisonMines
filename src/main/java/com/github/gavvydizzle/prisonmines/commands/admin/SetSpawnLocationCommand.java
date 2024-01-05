@@ -3,7 +3,6 @@ package com.github.gavvydizzle.prisonmines.commands.admin;
 import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
-import com.github.mittenmc.serverutils.PermissionCommand;
 import com.github.mittenmc.serverutils.SubCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -16,52 +15,29 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class SetSpawnLocationCommand extends SubCommand implements PermissionCommand {
+public class SetSpawnLocationCommand extends SubCommand {
 
-    private final AdminCommandManager adminCommandManager;
     private final MineManager mineManager;
     private final ArrayList<String> args2 = new ArrayList<>(Arrays.asList("exact", "snap"));
 
     public SetSpawnLocationCommand(AdminCommandManager adminCommandManager, MineManager mineManager) {
-        this.adminCommandManager = adminCommandManager;
         this.mineManager = mineManager;
-    }
 
-    @Override
-    public String getPermission() {
-        return "prisonmines.mineadmin." + getName().toLowerCase();
-    }
-
-    @Override
-    public String getName() {
-        return "setSpawnLocation";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Change a mine's spawn location";
-    }
-
-    @Override
-    public String getSyntax() {
-        return "/" + adminCommandManager.getCommandDisplayName() + " setSpawnLocation <id> <exact|snap> [x] [y] [z] [pitch] [yaw]";
-    }
-
-    @Override
-    public String getColoredSyntax() {
-        return ChatColor.YELLOW + "Usage: " + getSyntax();
+        setName("setSpawnLocation");
+        setDescription("Change a mine's spawn location");
+        setSyntax("/" + adminCommandManager.getCommandDisplayName() + " setSpawnLocation <id> <exact|snap> [x] [y] [z] [pitch] [yaw]");
+        setColoredSyntax(ChatColor.YELLOW + getSyntax());
+        setPermission(adminCommandManager.getPermissionPrefix() + getName().toLowerCase());
     }
 
     @Override
     public void perform(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player)) return;
+        if (!(sender instanceof Player player)) return;
 
         if (args.length < 3) {
             sender.sendMessage(getColoredSyntax());
             return;
         }
-
-        Player player = (Player) sender;
 
         Mine mine = mineManager.getMine(args[1]);
         if (mine == null) {

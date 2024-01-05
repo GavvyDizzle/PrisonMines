@@ -30,8 +30,7 @@ public class TeleportToMineSpawnCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (!(sender instanceof Player)) return true;
-        Player player = (Player) sender;
+        if (!(sender instanceof Player player)) return true;
 
         if (args.length == 0) {
             if (lastVisitedMine.containsKey(player.getUniqueId())) {
