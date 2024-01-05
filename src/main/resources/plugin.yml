@@ -1,9 +1,9 @@
 name: PrisonMines
 version: '${project.version}'
 main: com.github.gavvydizzle.prisonmines.PrisonMines
-api-version: 1.18
+api-version: '1.20'
 depend: [ ServerUtils, WorldEdit ]
-softdepend: [ Multiverse-Core, PlaceholderAPI, ]
+softdepend: [ Multiverse-Core, PlaceholderAPI ]
 authors: [ GavvyDizzle ]
 description: Lightweight prison mines plugin for Spigot
 commands:
