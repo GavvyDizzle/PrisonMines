@@ -47,11 +47,11 @@ public class ResetMineCommand extends SubCommand {
                     return;
                 }
 
-                mineManager.resetAllMines(multiplier);
+                mineManager.resetAllMines(multiplier, false);
                 sender.sendMessage(ChatColor.GREEN + "Resetting all mines and randomized their timers. Each reset is delayed by " + MineManager.RESET_ALL_TICK_INTERVAL + " ticks");
             }
             else {
-                mineManager.resetAllMines();
+                mineManager.resetAllMines(false);
                 sender.sendMessage(ChatColor.GREEN + "Resetting all mines. Each reset is delayed by " + MineManager.RESET_ALL_TICK_INTERVAL + " ticks");
             }
             return;
@@ -63,7 +63,7 @@ public class ResetMineCommand extends SubCommand {
             return;
         }
 
-        mine.resetMine(true);
+        mine.resetMine(true, false);
         sender.sendMessage(ChatColor.GREEN + "Resetting " + mine.getName());
     }
 

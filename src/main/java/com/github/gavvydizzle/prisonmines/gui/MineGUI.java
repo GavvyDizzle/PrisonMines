@@ -78,7 +78,7 @@ public class MineGUI implements ClickableMenu {
         meta.setDisplayName(Colors.conv("&eChange Reset Percentage"));
         meta.setLore(Colors.conv(Arrays.asList(
                 "&7Click here to change",
-                "&7Current value: &a{val}%"
+                "&7Current value: &a{val}"
         )));
         meta.removeItemFlags(ItemFlag.values());
         resetPercentageItem.setItemMeta(meta);
@@ -210,9 +210,18 @@ public class MineGUI implements ClickableMenu {
         ItemStack itemStack = resetPercentageItem.clone();
         ItemMeta meta = itemStack.getItemMeta();
         assert meta != null;
+
         ArrayList<String> lore = new ArrayList<>();
+        String replacement;
+        if (mine.getResetPercentage() == -1) {
+            replacement = "DISABLED (-1)";
+        }
+        else {
+            replacement = mine.getResetPercentage() + "%";
+        }
+
         for (String s : Objects.requireNonNull(meta.getLore())) {
-            lore.add(s.replace("{val}", String.valueOf(mine.getResetPercentage())));
+            lore.add(s.replace("{val}", replacement));
         }
         meta.setLore(lore);
         itemStack.setItemMeta(meta);
@@ -298,7 +307,7 @@ public class MineGUI implements ClickableMenu {
             }
             else if (e.getSlot() == 8) {
                 Sounds.generalClickSound.playSound(player);
-                mine.resetMine(true);
+                mine.resetMine(true, false);
                 e.getWhoClicked().sendMessage(ChatColor.GREEN + "Resetting " + mine.getName());
                 return;
             }

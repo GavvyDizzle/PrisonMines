@@ -53,6 +53,7 @@ public class Mine {
     private int volume;
     private int numSolidBlocks;
     private boolean isResettingPaused;
+    private final boolean blockResetOnServerStart;
 
     // Internal stuff
     private final CuboidRegion region;
@@ -81,6 +82,7 @@ public class Mine {
         updateVolume();
         numSolidBlocks = volume;
 
+        blockResetOnServerStart = false;
         resetLengthSeconds = 600;
         resetPercentage = 0;
         spawnLocation = null;
@@ -95,6 +97,7 @@ public class Mine {
         config.addDefault("id", id);
         config.addDefault("name", id);
         config.addDefault("world", world.getName());
+        config.addDefault("blockResetOnServerStart", blockResetOnServerStart);
         config.addDefault("resetLengthSeconds", resetLengthSeconds);
         config.addDefault("resetPercentage", resetPercentage);
         config.addDefault("loc.min.x", min.getX());
@@ -129,6 +132,7 @@ public class Mine {
         config.addDefault("id", "todo");
         config.addDefault("name", "todo");
         config.addDefault("world", "world");
+        config.addDefault("blockResetOnServerStart", false);
         config.addDefault("resetLengthSeconds", 600);
         config.addDefault("resetPercentage", 0);
         config.addDefault("loc.min.x", 0);
@@ -155,6 +159,7 @@ public class Mine {
         if (world == null) {
             PrisonMines.getInstance().getLogger().warning("The world (" + w + ") is null for mine " + id + "! This mine is disabled");
         }
+        blockResetOnServerStart = config.getBoolean("blockResetOnServerStart");
         resetLengthSeconds = config.getInt("resetLengthSeconds");
         resetPercentage = config.getInt("resetPercentage");
         min = BlockVector3.at(config.getInt("loc.min.x"), config.getInt("loc.min.y"), config.getInt("loc.min.z"));
@@ -210,8 +215,11 @@ public class Mine {
      * Calling this method schedules the next reset as well.
      * If a paused mine resets then its timer resumes.
      * @param resumeFromPause If a paused timer should be resumed
+     * @param serverStart If this reset was triggered by the server start setting
      */
-    public void resetMine(boolean resumeFromPause) {
+    public void resetMine(boolean resumeFromPause, boolean serverStart) {
+        if (serverStart && blockResetOnServerStart) return;
+
         updateNextResetTick();
         resetTimeChanged = false;
         if (resumeFromPause) isResettingPaused = false;
@@ -251,8 +259,11 @@ public class Mine {
      * If a paused mine resets then its timer resumes.
      * @param resumeFromPause If a paused timer should be resumed
      * @param multiplier The multiplier used to determine the minimum bound of the random time remaining
+     * @param serverStart If this reset was triggered by the server start setting
      */
-    public void resetMine(boolean resumeFromPause, double multiplier) {
+    public void resetMine(boolean resumeFromPause, double multiplier, boolean serverStart) {
+        if (serverStart && blockResetOnServerStart) return;
+
         updateNextResetTick((int) Numbers.randomNumber(resetLengthSeconds * multiplier, resetLengthSeconds));
         resetTimeChanged = false;
         if (resumeFromPause) isResettingPaused = false;
@@ -344,7 +355,7 @@ public class Mine {
      * It is set to 11 seconds so a 10-second reset warning message can be sent
      */
     private void attemptPercentageReset() {
-        if (resetTimeChanged) return;
+        if (resetTimeChanged || resetPercentage == -1) return;
 
         if (numSolidBlocks <= volume * resetPercentage / 100) {
             resetTimeChanged = true;
@@ -573,11 +584,12 @@ public class Mine {
     }
 
     /**
-     * Updates the percentage the mine will reset at
-     * @param percent The percent. Constrained to 0 <= x <= 95
+     * Updates the percentage the mine will reset at.
+     * If set to -1, the mine will never reset due to blocks broken
+     * @param percent The percent. Constrained to -1 <= x <= 95
      */
     public void setResetPercentage(int percent) {
-        percent = Numbers.constrain(percent, 0, 95);
+        percent = Numbers.constrain(percent, -1, 95);
         resetPercentage = percent;
         mineGUI.updateResetPercentageItem();
     }

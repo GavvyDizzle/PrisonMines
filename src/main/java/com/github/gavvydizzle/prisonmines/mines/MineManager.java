@@ -107,10 +107,10 @@ public class MineManager implements Listener {
         loadMines();
         if (firstLoad && config.getBoolean("resetOnServerStart.enabled")) {
             if (config.getBoolean("resetOnServerStart.randomizeTime.enabled")) {
-                resetAllMines(config.getInt("resetOnServerStart.randomizeTime.min"));
+                resetAllMines(config.getInt("resetOnServerStart.randomizeTime.min"), true);
             }
             else {
-                resetAllMines();
+                resetAllMines(true);
             }
         }
     }
@@ -148,7 +148,7 @@ public class MineManager implements Listener {
                             mine.updateNextResetTick(); //don't reset but restart the timer
                         }
                         else {
-                            mine.resetMine(true);
+                            mine.resetMine(true, false);
                         }
                     }
                 }
@@ -167,8 +167,9 @@ public class MineManager implements Listener {
 
     /**
      * Resets all mines with a short delay between resets
+     * @param serverStart If this reset was triggered by the server start setting
      */
-    public void resetAllMines() {
+    public void resetAllMines(boolean serverStart) {
         new RepeatingTask(instance, 0, RESET_ALL_TICK_INTERVAL) {
 
             final ArrayList<Mine> arr = new ArrayList<>(mines.values());
@@ -184,7 +185,7 @@ public class MineManager implements Listener {
                 // Checks if the mine is still loaded
                 // This mine will be skipped in the event that it was deleted
                 if (mines.containsKey(arr.get(i).getId())) {
-                    arr.get(i++).resetMine(true);
+                    arr.get(i++).resetMine(true, serverStart);
                 }
             }
         };
@@ -194,8 +195,9 @@ public class MineManager implements Listener {
      * Resets all mines with a short delay between resets.
      * The reset time of all mine will be randomly chosen within the range [multiplier*time, time]
      * @param multiplier The amount to multiply the time by to get the minimum bound
+     * @param serverStart If this reset was triggered by the server start setting
      */
-    public void resetAllMines(double multiplier) {
+    public void resetAllMines(double multiplier, boolean serverStart) {
         new RepeatingTask(instance, 0, RESET_ALL_TICK_INTERVAL) {
 
             final ArrayList<Mine> arr = new ArrayList<>(mines.values());
@@ -211,7 +213,7 @@ public class MineManager implements Listener {
                 // Checks if the mine is still loaded
                 // This mine will be skipped in the event that it was deleted
                 if (mines.containsKey(arr.get(i).getId())) {
-                    arr.get(i++).resetMine(true, multiplier);
+                    arr.get(i++).resetMine(true, multiplier, serverStart);
                 }
             }
         };
