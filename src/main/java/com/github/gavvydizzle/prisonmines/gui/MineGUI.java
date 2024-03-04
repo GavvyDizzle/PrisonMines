@@ -440,8 +440,8 @@ public class MineGUI implements ClickableMenu {
      * @param material The Material
      * @return True if this Material can be used as a block in the mine
      */
-    private static boolean isValidMaterial(Material material) {
-        return material.isSolid() && !material.name().contains("DOOR");
+    private boolean isValidMaterial(Material material) {
+        return material.isBlock();
     }
 
 }
