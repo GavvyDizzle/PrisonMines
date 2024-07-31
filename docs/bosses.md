@@ -4,11 +4,13 @@ description: A custom MythicMobs boss support system
 
 # Bosses
 
-### Requirements
+## Status - Private
+
+## Requirements
 
 * Dependencies: MythicMobs, PlaceholderAPI, ServerUtils
 
-### Arenas
+## Arenas
 
 * Arenas operate on a one-mob-per-arena system. Each arena allows one player to fight a certain mob at a time
 * Supports a queue system which makes players wait if a fight is active
@@ -16,7 +18,7 @@ description: A custom MythicMobs boss support system
   * This is calculated with an equation that parses PAPI placeholders
 * The player receives rewards only if they kill the mob without dying
 
-### Boss Event Arena
+## Boss Event Arena
 
 This is a place where server-wide boss events can take place
 
@@ -26,9 +28,9 @@ This is a place where server-wide boss events can take place
 * All remaining players will receive rewards when the boss is killed
   * The player who dealt the killing blow has the option to receive additional rewards
 
-### Commands
+## Commands
 
-#### Player Commands
+### Player Commands
 
 * The base command is `bosses` with the permission `bosses.player`
 * All commands require permission to use which follows the format `bosses.player.command` where command is the name of the command
@@ -37,7 +39,7 @@ This is a place where server-wide boss events can take place
 * `bosses spectate <arenaID>` Spectate an arena
 * `bosses spectateBossEvent` Spectate the boss arena
 
-#### Admin Commands
+### Admin Commands
 
 * The base command is `bossesAdmin` with the permission `bosses.admin`
 * All commands require permission to use which follows the format `bosses.admin.command` where command is the name of the command
@@ -51,7 +53,7 @@ This is a place where server-wide boss events can take place
 * `bossesAdmin teleport <arenaID> <location>` Teleport to an arena's location
 * `bossesAdmin teleportBossArena <location>` Teleport to the boss arena's location
 
-### Notes
+## Notes
 
 * The plugin does **not** stop players from teleporting away. You should ensure players cannot leave the arena during a fight. Consider using `WorldGuard`
 * The plugin does **not** save the old location of spectating players. They will need to teleport out on their own

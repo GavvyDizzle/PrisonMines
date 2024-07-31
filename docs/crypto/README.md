@@ -4,13 +4,15 @@ description: A passive money making system for mining
 
 # Crypto
 
-### Requirements
+## Status - Private
+
+## Requirements
 
 * Dependencies: ServerUtils, Vault, WorldGuard
 * Soft Dependencies: RewardsInventory
 * Data Storage: MySQL or MariaDB
 
-### GPUs
+## GPUs
 
 GPUs are custom items created for the player to collect. They allow passive collection of coins
 
@@ -18,7 +20,7 @@ GPUs are custom items created for the player to collect. They allow passive coll
 * Each GPU is created with its own `.yml` file in the plugin's `/gpus` directory
 * Reference the example GPUs when creating new ones
 
-#### GPU Rewards
+### GPU Rewards
 
 * For each GPU, you can create as many "rewards" as you would like
 * Each reward has a `chance` of being run for every block mined (in a WorldGuard region)
@@ -29,7 +31,7 @@ GPUs are custom items created for the player to collect. They allow passive coll
   * You can use the `{amount}` placeholder in commands to fill in the amount found (rounded to 6 decimal places)
 * `commands` are run before `messages` when the reward is given
 
-### Coins
+## Coins
 
 These are the items players are meant to passively accumulate. They can be modified in multiple menus
 
@@ -38,12 +40,12 @@ These are the items players are meant to passively accumulate. They can be modif
   * Each coin requires a valid `coinbaseID`. This value will be used to retrieve the `price` from the CoinBase API
   * All other values are configurable by you. Check out the example file to see what is possible
 
-### Menu System
+## Menu System
 
 * Opening the menu with `/crypto` brings you to the main menu that contains 5 submenus
 * Each submenu has a back button that will bring the player back to the main menu
 
-#### GPU Storage Menu
+### GPU Storage Menu
 
 * In this menu, players can store up to 9 GPUs
 * The stored GPUs will retain their place in the menu
@@ -52,31 +54,31 @@ These are the items players are meant to passively accumulate. They can be modif
   * Each GPU has a configurable amount of time for the lock to last for
   * The system is smart and will allow items to be freely moved around that have not been locked (or whose lock time is up and the GPU is kept in the menu)
 
-#### Coin Selling Menu
+### Coin Selling Menu
 
 * Players will have different items that display amount/price/value of their coins
 * Clicking on an item will open up a new menu where the player inputs the amount they want to sell
 
-#### Coin Exchange Menu
+### Coin Exchange Menu
 
 * Players will have different items that display amount/price/value of their coins
   * The first item is the one they are "selling" and the second is the one they are "buying"
 * The menu that opens after they click the second item is very descriptive and allows for input
 
-#### Coin Sending Menu
+### Coin Sending Menu
 
 * Players will have different items that display amount/price/value of their coins
 * Clicking on an item will close the menu and prompt the player with a command
   * A command is used here for easier input of player names
 
-#### GPU Selling Menu
+### GPU Selling Menu
 
 * This is a simple menu that allows the player to select and then sell their GPUs
 * You can configure the placement of these slots and the appearance of the confirmation item
 
-### Commands:
+## Commands
 
-#### Player Commands
+### Player Commands
 
 * The base command is `crypto` with the permission `crypto.player`
 * All commands require permission to use which follows the format `crypto.player.command` where command is the name of the command
@@ -88,7 +90,7 @@ These are the items players are meant to passively accumulate. They can be modif
   * `crypto sellGPU` Opens the sell GPU submenu
   * `crypto send <crypto> <amount> <player>` Sends crypto to a player (taxed)
 
-#### Admin Commands
+### Admin Commands
 
 * The base command is `cryptoadmin` with the permission `crypto.admin`
 * All commands require permission to use which follows the format `crypto.admin.command` where command is the name of the command
@@ -107,19 +109,19 @@ These are the items players are meant to passively accumulate. They can be modif
 * `cryptoadmin simulateBlockMine <player> [amount]` Simulates a block mine for the player (up to 10,000)
 * `cryptoadmin updateSavedItems` Updates all ItemStacks saved to the database
 
-### Custom Placeholders
+## Custom Placeholders
 
 * There are many custom placeholders throughout the plugin. They are surrounded by curly braces `{}`
 * Instead of listing them all out here, it is your job to check the example configs or code to see they do
   * Most placeholders are already in use in the example configs. There may be more in the code but they are probably unnecessary
 
-### Admin Menu Viewing
+## Admin Menu Viewing
 
 * Admins can view menus of online and offline players with `/cryptoadmin openPlayerMenu <player>`
 * Currently, admins are only able to edit the "GPU Storage" menu (all other menus are view-only)
 * As a warning, admins are given access to all slots of the GPU storage menu. If they place items in slots the player does not have permission to access, the items will delete the next time the player causes their menu to save. YOU HAVE BEEN WARNED
 
-### Notes
+## Notes
 
 * You are allowed to create up to 25 different coins
   * Changing this cap requires editing the `PlayerData` class, `dbsetup.sql`, and adding/removing columns from the `coins` database table

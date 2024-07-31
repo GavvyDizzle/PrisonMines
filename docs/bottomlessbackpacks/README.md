@@ -4,7 +4,11 @@ description: A lightweight and simple backpack plugin for your Spigot server!
 
 # BottomlessBackpacks
 
-### Features
+## Status - Open Source
+
+* GutHub [https://github.com/GavvyDizzle/BottomlessBackpacks](https://github.com/GavvyDizzle/BottomlessBackpacks)
+
+## Features
 
 * Backpacks have 45 slots per page and support up to 1000 pages
 * Admins can view and edit backpacks of online and offline players
@@ -12,12 +16,12 @@ description: A lightweight and simple backpack plugin for your Spigot server!
 * Ability to save the page a backpack closed on and open to a specific page
 * Incredibly efficient and player-friendly UI
 
-### Requirements
+## Requirements
 
 * This plugin has one dependency: [ServerUtils](https://www.spigotmc.org/resources/serverutils.106515/)
 * Currently only supports MySQL and MariaDB
 
-### Commands
+## Commands
 
 * The only player command is `/backpack [page]` (alias `bp`) which opens a backpack to the specified page (if provided)
   * Permission: `bottomlessbackpacks.backpack`
@@ -36,7 +40,7 @@ description: A lightweight and simple backpack plugin for your Spigot server!
 * `/bpa reset <player>` Resets a backpack
 * `/bpa resetAllData` Resets all backpacks
 
-### Backpack Inventory
+## Backpack Inventory
 
 * Each page contains a menu bar with some buttons and information
   * A button to increase or decrease the page
@@ -45,7 +49,7 @@ description: A lightweight and simple backpack plugin for your Spigot server!
 
 [![img.png](https://github.com/GavvyDizzle/BottomlessBackpacks/raw/master/images/player\_backpack.png)](https://github.com/GavvyDizzle/BottomlessBackpacks/blob/master/images/player\_backpack.png)
 
-### Additional Information
+## Additional Information
 
 * The number of pages is limited to 1000
 * Decreasing the size of a backpack _will_ delete all data on pages that no longer exist

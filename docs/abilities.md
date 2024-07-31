@@ -4,7 +4,9 @@ description: A remake of the Abilities plugin from JailbreakMC with improved con
 
 # Abilities
 
-### Development Setup
+## Status - Private
+
+## Development Setup
 
 There is some extra setup since this plugin relies on nms
 
@@ -12,7 +14,7 @@ There is some extra setup since this plugin relies on nms
   * Install with: `java -jar BuildTools.jar --rev 1.20.4 --remapped` (after downloading the BuildTools jar)
 * The plugin relies _exclusively_ on Minecraft 1.20.4. Version updates will require a new plugin build
 
-### Ability Configuration
+## Ability Configuration
 
 Each ability has its own configuration file in the `/abilities` folder
 
@@ -58,7 +60,7 @@ extras:
   projectileSpeed: 10.0
 ```
 
-### Other Configuration Options
+## Other Configuration Options
 
 * Ability selection menu
   * Ability item placement in the menu

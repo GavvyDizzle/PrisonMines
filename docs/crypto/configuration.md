@@ -4,14 +4,14 @@ description: Default configuration files
 
 # Configuration
 
-### chat.yml
+## chat.yml
 
 ```yaml
 pattern: (?i)\[gpurack\]|\[gpus\]
 lifetimeSeconds: 300
 ```
 
-### coins.yml
+## coins.yml
 
 ```yaml
 boosts:
@@ -54,7 +54,7 @@ list:
         - '&aValue: ${value}'
 ```
 
-### commands.yml
+## commands.yml
 
 ```yaml
 commandDisplayName:
@@ -88,7 +88,7 @@ descriptions:
     send: Send crypto to another player
 ```
 
-### config.yml
+## config.yml
 
 ```yaml
 database:
@@ -99,7 +99,7 @@ database:
   database: todo
 ```
 
-### gpus.yml
+## gpus.yml
 
 ```yaml
 groups:
@@ -115,7 +115,7 @@ groups:
         permission: crypto.groups.4000-series.limit.4
 ```
 
-### menus.yml
+## menus.yml
 
 ```yaml
 backItem:
@@ -359,7 +359,7 @@ sell_gpus:
       - '&aSell Price: ${price_formatted}'
 ```
 
-### messages.yml
+## messages.yml
 
 ```yaml
 cannotSendSelf: '&cUnable to send crypto to yourself'
@@ -371,7 +371,7 @@ selfSendSuccessful: '&aSuccessfully sent {amount} {coin} to {other}'
 sendSuccessful: '&aYou received {amount} {coin} from {player}'
 ```
 
-### sounds.yml
+## sounds.yml
 
 ```yaml
 generalClickSound:
@@ -396,7 +396,7 @@ sellSound:
   pitch: 1.75
 ```
 
-### example\_gpu.yml (item)
+## example\_gpu.yml (item)
 
 ```yaml
 id: gpu
@@ -435,7 +435,7 @@ rewards:
       - 'You found {amount} ETH'
 ```
 
-### example\_gpu2.yml (skull)
+## example\_gpu2.yml (skull)
 
 ```yaml
 id: gpu2
