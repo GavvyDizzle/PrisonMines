@@ -4,15 +4,17 @@ import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
 import com.github.mittenmc.serverutils.SubCommand;
+import com.github.mittenmc.serverutils.command.WildcardCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.util.StringUtil;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class SetMaxWeightCommand extends SubCommand {
+public class SetMaxWeightCommand extends SubCommand implements WildcardCommand {
 
     private final MineManager mineManager;
     private final ArrayList<String> args2 = new ArrayList<>(Collections.singletonList("scale"));
@@ -82,5 +84,13 @@ public class SetMaxWeightCommand extends SubCommand {
         }
 
         return list;
+    }
+
+    @Override
+    public Collection<String> getWildcardValues(int index, String[] args) {
+        if (index == 1) {
+            return mineManager.getMineIDs();
+        }
+        return Collections.emptyList();
     }
 }

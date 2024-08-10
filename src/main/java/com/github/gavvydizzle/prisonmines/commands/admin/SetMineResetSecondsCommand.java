@@ -5,14 +5,17 @@ import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
 import com.github.mittenmc.serverutils.Numbers;
 import com.github.mittenmc.serverutils.SubCommand;
+import com.github.mittenmc.serverutils.command.WildcardCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.util.StringUtil;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
-public class SetMineResetSecondsCommand extends SubCommand {
+public class SetMineResetSecondsCommand extends SubCommand implements WildcardCommand {
 
     private final MineManager mineManager;
 
@@ -62,5 +65,13 @@ public class SetMineResetSecondsCommand extends SubCommand {
         }
 
         return list;
+    }
+
+    @Override
+    public Collection<String> getWildcardValues(int index, String[] args) {
+        if (index == 1) {
+            return mineManager.getMineIDs();
+        }
+        return Collections.emptyList();
     }
 }

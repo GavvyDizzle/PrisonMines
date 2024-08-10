@@ -4,14 +4,17 @@ import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
 import com.github.mittenmc.serverutils.SubCommand;
+import com.github.mittenmc.serverutils.command.WildcardCommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.util.StringUtil;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
-public class PauseMineResettingCommand extends SubCommand {
+public class PauseMineResettingCommand extends SubCommand implements WildcardCommand {
 
     private final MineManager mineManager;
 
@@ -40,10 +43,10 @@ public class PauseMineResettingCommand extends SubCommand {
 
         mine.toggleIsResettingPaused();
         if (mine.isResettingPaused()) {
-            sender.sendMessage(ChatColor.YELLOW + "This mine can no longer reset. The timer will count down, but it will pause at 0 seconds.");
+            sender.sendMessage(ChatColor.YELLOW + "This mine (" + mine.getId() + ") can no longer reset. The timer will count down, but it will pause at 0 seconds.");
         }
         else {
-            sender.sendMessage(ChatColor.GREEN + "This mine can now reset");
+            sender.sendMessage(ChatColor.GREEN + "This mine (" + mine.getId() + ") can now reset");
         }
     }
 
@@ -56,5 +59,13 @@ public class PauseMineResettingCommand extends SubCommand {
         }
 
         return list;
+    }
+
+    @Override
+    public Collection<String> getWildcardValues(int index, String[] args) {
+        if (index == 1) {
+            return mineManager.getMineIDs();
+        }
+        return Collections.emptyList();
     }
 }
