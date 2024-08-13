@@ -6,7 +6,7 @@ description: A lightweight and simple backpack plugin for your Spigot server!
 
 ## Status - Open Source
 
-* GutHub [https://github.com/GavvyDizzle/BottomlessBackpacks](https://github.com/GavvyDizzle/BottomlessBackpacks)
+* GitHub [https://github.com/GavvyDizzle/BottomlessBackpacks](https://github.com/GavvyDizzle/BottomlessBackpacks)
 
 ## Features
 
