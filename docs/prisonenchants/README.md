@@ -6,6 +6,8 @@ description: >-
 
 # PrisonEnchants
 
+## Status - Private
+
 ## Features
 
 * Full control over items, messages, menus, and sounds
