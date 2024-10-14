@@ -1,28 +1,48 @@
 package com.github.gavvydizzle.prisonmines.mines.contents;
 
+import com.github.gavvydizzle.prisonmines.mines.Mine;
+import com.github.mittenmc.serverutils.gui.pages.ItemGenerator;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Comparator;
 
 /**
  * Represents a block that is part of the mine.
  * This class stores a material and a weight
  */
-public class MineBlock implements Comparable<MineBlock> {
+public class MineBlock implements Comparable<MineBlock>, ItemGenerator {
 
+    private final Mine mine;
     private final Material material;
     private final String formattedName;
     private int weight;
 
-    public MineBlock(Material material) {
+    public MineBlock(Mine mine, Material material) {
+        this.mine = mine;
         this.material = material;
         this.formattedName = capitalizeFirstLetters(material);
         this.weight = 0;
     }
 
-    public MineBlock(Material material, int weight) {
+    public MineBlock(Mine mine, Material material, int weight) {
+        this.mine = mine;
         this.material = material;
         this.formattedName = capitalizeFirstLetters(material);
         this.weight = weight;
+    }
+
+    @Override
+    public @NotNull ItemStack getMenuItem(Player player) {
+        return mine.getContents().getInfoItem(this);
+    }
+
+    @Override
+    public @Nullable ItemStack getPlayerItem(Player player) {
+        return null;
     }
 
     public Material getMaterial() {
@@ -53,15 +73,11 @@ public class MineBlock implements Comparable<MineBlock> {
 
     @Override
     public int compareTo(@NotNull MineBlock o) {
-        if (material != o.getMaterial()) {
-            return material.toString().compareTo(o.toString());
-        }
-        else if (weight != o.weight) {
-            return Integer.compare(weight, o.weight);
-        }
-        else {
-            return -1;
-        }
+        return Comparator.comparing(MineBlock::getMaterialName).thenComparing(MineBlock::getWeight).compare(this, o);
+    }
+
+    public String getMaterialName() {
+        return material.toString();
     }
 
     /**

@@ -1,14 +1,14 @@
 package com.github.gavvydizzle.prisonmines.papi;
 
+import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
+import com.github.gavvydizzle.prisonmines.mines.contents.MineBlock;
 import com.github.mittenmc.serverutils.Numbers;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import com.github.gavvydizzle.prisonmines.mines.Mine;
-import com.github.gavvydizzle.prisonmines.mines.contents.MineBlock;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class MyExpansion extends PlaceholderExpansion {
 
@@ -59,33 +59,31 @@ public class MyExpansion extends PlaceholderExpansion {
                 return "Error parsing number: " + args[2];
             }
 
-            ArrayList<MineBlock> arr = mine.getContents().getSortedBlockList();
+            List<MineBlock> arr = mine.getContents().getWeightSortedList();
 
             if (index < 0 || index >= arr.size()) {
                 return "Invalid index: " + args[2];
             }
 
-            switch (args[3].toLowerCase()) {
-                case "material":
-                    return arr.get(index).getFormattedName();
-                case "percent":
-                    return String.valueOf(Numbers.round(mine.getContents().getMineBlockFrequency(arr.get(index)) * 100, 2));
-                default:
-                    return null;
-            }
+            return switch (args[3].toLowerCase()) {
+                case "material" -> arr.get(index).getFormattedName();
+                case "percent" ->
+                        String.valueOf(Numbers.round(mine.getContents().getMineBlockFrequency(arr.get(index)) * 100, 2));
+                default -> null;
+            };
         }
 
-        switch (args[1].toLowerCase()) {
-            case "timeuntilreset": return Numbers.getTimeFormatted(mineManager.getSecondsUntilNextReset(mine), "0s");
-            case "name": return mine.getName();
-            case "percentremaining": return String.valueOf(Numbers.round(mine.getPercentRemaining(), 2));
-            case "percentmined": return String.valueOf(Numbers.round(mine.getPercentMined(), 2));
-            case "blocksremaining": return String.valueOf(mine.getNumSolidBlocks());
-            case "resetpercentage": return String.valueOf(mine.getResetPercentage());
-            case "volume": return String.valueOf(mine.getVolume());
-            case "resetlength": return Numbers.getTimeFormatted(mine.getResetLengthSeconds());
-        }
+        return switch (args[1].toLowerCase()) {
+            case "timeuntilreset" -> Numbers.getTimeFormatted(mineManager.getSecondsUntilNextReset(mine), "0s");
+            case "name" -> mine.getName();
+            case "percentremaining" -> String.valueOf(Numbers.round(mine.getPercentRemaining(), 2));
+            case "percentmined" -> String.valueOf(Numbers.round(mine.getPercentMined(), 2));
+            case "blocksremaining" -> String.valueOf(mine.getNumSolidBlocks());
+            case "resetpercentage" -> String.valueOf(mine.getResetPercentage());
+            case "volume" -> String.valueOf(mine.getVolume());
+            case "resetlength" -> Numbers.getTimeFormatted(mine.getResetLengthSeconds());
+            default -> null;
+        };
 
-        return null;
     }
 }

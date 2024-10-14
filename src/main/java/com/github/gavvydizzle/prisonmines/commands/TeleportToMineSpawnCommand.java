@@ -40,7 +40,7 @@ public class TeleportToMineSpawnCommand implements TabExecutor {
                     return true;
                 }
                 else {
-                    if (!mine.hasAccessPermission(player)) {
+                    if (mine.doesNotHaveAccessPermission(player)) {
                         sender.sendMessage(Messages.cannotAccessMine);
                         return true;
                     }
@@ -62,7 +62,7 @@ public class TeleportToMineSpawnCommand implements TabExecutor {
             return true;
         }
 
-        if (!mine.hasAccessPermission(player)) {
+        if (mine.doesNotHaveAccessPermission(player)) {
             sender.sendMessage(Messages.cannotAccessMine);
             return true;
         }

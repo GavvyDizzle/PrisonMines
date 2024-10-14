@@ -2,7 +2,6 @@ package com.github.gavvydizzle.prisonmines.commands.admin;
 
 import com.github.gavvydizzle.prisonmines.PrisonMines;
 import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
-import com.github.gavvydizzle.prisonmines.configs.CommandsConfig;
 import com.github.gavvydizzle.prisonmines.configs.MessagesConfig;
 import com.github.gavvydizzle.prisonmines.events.MinesReloadedEvent;
 import com.github.gavvydizzle.prisonmines.utils.Messages;
@@ -17,16 +16,9 @@ import java.util.List;
 
 public class ReloadCommand extends SubCommand {
 
-    private final AdminCommandManager adminCommandManager;
-    private final ArrayList<String> argsList;
+    private final List<String> argsList = List.of("messages", "mines");
 
     public ReloadCommand(AdminCommandManager adminCommandManager) {
-        this.adminCommandManager = adminCommandManager;
-        argsList = new ArrayList<>();
-        argsList.add("commands");
-        argsList.add("messages");
-        argsList.add("mines");
-
         setName("reload");
         setDescription("Reloads this plugin or a specified portion");
         setSyntax("/" + adminCommandManager.getCommandDisplayName() + " reload [arg]");
@@ -38,10 +30,6 @@ public class ReloadCommand extends SubCommand {
     public void perform(CommandSender sender, String[] args) {
         if (args.length >= 2) {
             switch (args[1].toLowerCase()) {
-                case "commands":
-                    reloadCommands();
-                    sender.sendMessage(ChatColor.GREEN + "[" + PrisonMines.getInstance().getName() + "] " + "Successfully reloaded commands");
-                    break;
                 case "messages":
                     reloadMessages();
                     sender.sendMessage(ChatColor.GREEN + "[" + PrisonMines.getInstance().getName() + "] " + "Successfully reloaded all messages");
@@ -54,7 +42,6 @@ public class ReloadCommand extends SubCommand {
             }
         }
         else {
-            reloadCommands();
             reloadMessages();
             reloadMines();
             sender.sendMessage(ChatColor.GREEN + "[" + PrisonMines.getInstance().getName() + "] " + "Successfully reloaded");
@@ -64,18 +51,13 @@ public class ReloadCommand extends SubCommand {
 
     @Override
     public List<String> getSubcommandArguments(CommandSender sender, String[] args) {
-        ArrayList<String> list = new ArrayList<>();
+        List<String> list = new ArrayList<>();
 
         if (args.length == 2) {
             StringUtil.copyPartialMatches(args[1], argsList, list);
         }
 
         return list;
-    }
-
-    private void reloadCommands() {
-        CommandsConfig.reload();
-        adminCommandManager.reload();
     }
 
     private void reloadMessages() {

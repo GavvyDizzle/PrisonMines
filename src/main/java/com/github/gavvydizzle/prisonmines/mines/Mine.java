@@ -7,6 +7,9 @@ import com.github.gavvydizzle.prisonmines.mines.contents.MineBlock;
 import com.github.gavvydizzle.prisonmines.mines.contents.MineContents;
 import com.github.mittenmc.serverutils.Colors;
 import com.github.mittenmc.serverutils.Numbers;
+import com.github.mittenmc.serverutils.file.FileEntity;
+import com.github.mittenmc.serverutils.gui.pages.ItemGenerator;
+import com.github.mittenmc.serverutils.item.ItemStackBuilder;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.WorldEdit;
@@ -18,49 +21,43 @@ import com.sk89q.worldedit.math.Vector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
+import java.util.logging.Level;
 
-public class Mine {
+public class Mine extends FileEntity implements Comparable<Mine>, ItemGenerator {
 
-    private boolean failedToLoad;
-    private final String accessPermission;
+    private String accessPermission;
 
     // Configurable properties
-    private final String id;
+    private String id;
     private String name;
     private BlockVector3 min;
     private BlockVector3 max;
     private Location spawnLocation;
     private World world;
     private MineContents contents;
-    private final File file;
-    private final FileConfiguration config;
     private int resetLengthSeconds, resetPercentage;
 
     // Dynamic properties
-    private final MineGUI mineGUI;
+    private MineGUI mineGUI;
     private int volume;
     private int numSolidBlocks;
     private boolean isResettingPaused;
-    private final boolean blockResetOnServerStart;
+    private boolean blockResetOnServerStart;
 
     // Internal stuff
-    private final CuboidRegion region;
+    private CuboidRegion region;
     private int nextResetTick;
-    private ItemStack guiItem;
     private boolean resetTimeChanged; // If the reset time has been edited because to the reset percentage has been reached
-    private boolean updateItemFlag;
 
     /**
      * Creates a new mine from two Locations
@@ -71,52 +68,19 @@ public class Mine {
      * @param world The world
      */
     public Mine(String id, BlockVector3 min, BlockVector3 max, @NotNull World world) {
+        super(new File(PrisonMines.getInstance().getDataFolder(), "mines/" + id.toLowerCase() + ".yml"));
+
         this.id = id.toLowerCase();
-        accessPermission = "prisonmines.mine." + id;
         this.name = id;
 
         this.min = min;
         this.max = max;
-        region = new CuboidRegion(min, max);
-        region.setWorld(BukkitAdapter.adapt(world));
-        updateVolume();
-        numSolidBlocks = volume;
 
-        blockResetOnServerStart = false;
-        resetLengthSeconds = 600;
-        resetPercentage = 0;
-        spawnLocation = null;
         this.world = world;
         contents = new MineContents(this);
         mineGUI = new MineGUI(this);
 
-        file = new File(PrisonMines.getInstance().getDataFolder(), "mines/" + id + ".yml");
-        config = YamlConfiguration.loadConfiguration(file);
-        config.options().copyDefaults(true);
-
-        config.addDefault("id", id);
-        config.addDefault("name", id);
-        config.addDefault("world", world.getName());
-        config.addDefault("blockResetOnServerStart", blockResetOnServerStart);
-        config.addDefault("resetLengthSeconds", resetLengthSeconds);
-        config.addDefault("resetPercentage", resetPercentage);
-        config.addDefault("loc.min.x", min.getX());
-        config.addDefault("loc.min.y", min.getY());
-        config.addDefault("loc.min.z", min.getZ());
-        config.addDefault("loc.max.x", max.getX());
-        config.addDefault("loc.max.y", max.getY());
-        config.addDefault("loc.max.z", max.getZ());
-        config.addDefault("contents.maxWeight", 1000);
-        config.addDefault("contents.list", new ArrayList<>());
-
-        try {
-            config.save(file);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        failedToLoad = false;
-        createGUIItem();
+        super.reload();
     }
 
     /**
@@ -124,41 +88,38 @@ public class Mine {
      * @param file The file to load from
      */
     public Mine(File file) {
-        this.file = file;
+        super(file);
 
-        config = YamlConfiguration.loadConfiguration(file);
-        config.options().copyDefaults(true);
+        super.reload();
+    }
 
-        config.addDefault("id", "todo");
-        config.addDefault("name", "todo");
-        config.addDefault("world", "world");
+    @Override
+    public void reloadData(FileConfiguration config) {
+        config.addDefault("id", (id != null ? id : "todo"));
+        config.addDefault("name", (name != null ? name : "todo"));
+        config.addDefault("world", (world != null ? world.getName() : "world"));
         config.addDefault("blockResetOnServerStart", false);
         config.addDefault("resetLengthSeconds", 600);
         config.addDefault("resetPercentage", 0);
-        config.addDefault("loc.min.x", 0);
-        config.addDefault("loc.min.y", 0);
-        config.addDefault("loc.min.z", 0);
-        config.addDefault("loc.max.x", 0);
-        config.addDefault("loc.max.y", 0);
-        config.addDefault("loc.max.z", 0);
+        config.addDefault("loc.min.x", (min != null ? min.x() : 0));
+        config.addDefault("loc.min.y", (min != null ? min.y() : 0));
+        config.addDefault("loc.min.z", (min != null ? min.z() : 0));
+        config.addDefault("loc.max.x", (max != null ? max.x() : 0));
+        config.addDefault("loc.max.y", (max != null ? max.y() : 0));
+        config.addDefault("loc.max.z", (max != null ? max.z() : 0));
         config.addDefault("contents.maxWeight", 1000);
         config.addDefault("contents.list", new ArrayList<>());
 
-        try {
-            config.save(file);
-        } catch (Exception e) {
-            e.printStackTrace();
-            failedToLoad = true;
-        }
-
-        id = Objects.requireNonNull(config.getString("id")).toLowerCase();
+        if (id == null) id = config.getString("id", UUID.randomUUID().toString()).toLowerCase();
         accessPermission = "prisonmines.mine." + id;
         name = config.getString("name") != null ? Colors.conv(config.getString("name")) : id; // Set to the id if the name is not set
+
         String w = config.getString("world");
         world = Bukkit.getWorld(Objects.requireNonNull(w));
         if (world == null) {
-            PrisonMines.getInstance().getLogger().warning("The world (" + w + ") is null for mine " + id + "! This mine is disabled");
+            PrisonMines.getInstance().getLogger().warning("The world '" + w + "' is null for mine " + id + "! This mine is disabled");
         }
+
         blockResetOnServerStart = config.getBoolean("blockResetOnServerStart");
         resetLengthSeconds = config.getInt("resetLengthSeconds");
         resetPercentage = config.getInt("resetPercentage");
@@ -174,11 +135,6 @@ public class Mine {
 
         updateVolume();
         numSolidBlocks = volume;
-
-        if (failedToLoad) return;
-
-        failedToLoad = false;
-        createGUIItem();
     }
 
     private void updateVolume() {
@@ -188,27 +144,11 @@ public class Mine {
     /**
      * The permission is of the format "prisonmines.mine.id"
      * @param player The player
-     * @return True if the player has permission to access this mine
+     * @return True if the player does not have permission to access this mine
      */
-    public boolean hasAccessPermission(Player player) {
-        return player.hasPermission(accessPermission);
+    public boolean doesNotHaveAccessPermission(Player player) {
+        return !player.hasPermission(accessPermission);
     }
-
-    /**
-     * Updates the GUI item for this mine to be the most common block in the mine
-     */
-    private void createGUIItem() {
-        Material material = Material.BEDROCK;
-        List<MineBlock> mineBlocks = contents.getSortedBlockList();
-        if (!mineBlocks.isEmpty()) material = mineBlocks.get(0).getMaterial();
-
-        guiItem = new ItemStack(material);
-        ItemMeta meta = guiItem.getItemMeta();
-        assert meta != null;
-        meta.setDisplayName(Colors.conv("&e" + id));
-        guiItem.setItemMeta(meta);
-    }
-
 
     /**
      * Resets this mine by replacing all blocks in the mine.
@@ -245,11 +185,11 @@ public class Mine {
             editSession.setBlocks(selection, pat);
 
             numSolidBlocks = volume;
-            Bukkit.getScheduler().runTask(PrisonMines.getInstance(), () -> Bukkit.getPluginManager().callEvent(new MinePostResetEvent(this, percentRemaining)));
+            PrisonMines.getInstance().getFoliaLib().getScheduler().runLater((t) -> Bukkit.getPluginManager().callEvent(new MinePostResetEvent(this, percentRemaining)), 1L);
             teleportContainedPlayersToSpawn();
 
         } catch (MaxChangedBlocksException ex) {
-            ex.printStackTrace();
+            PrisonMines.getInstance().getLogger().log(Level.WARNING, ex.getMessage(), ex);
         }
     }
 
@@ -289,11 +229,11 @@ public class Mine {
             editSession.setBlocks(selection, pat);
 
             numSolidBlocks = volume;
-            Bukkit.getScheduler().runTask(PrisonMines.getInstance(), () -> Bukkit.getPluginManager().callEvent(new MinePostResetEvent(this, percentRemaining)));
+            PrisonMines.getInstance().getFoliaLib().getScheduler().runLater((t) -> Bukkit.getPluginManager().callEvent(new MinePostResetEvent(this, percentRemaining)), 1L);
             teleportContainedPlayersToSpawn();
 
         } catch (MaxChangedBlocksException ex) {
-            ex.printStackTrace();
+            PrisonMines.getInstance().getLogger().log(Level.WARNING, ex.getMessage(), ex);
         }
     }
 
@@ -312,7 +252,7 @@ public class Mine {
             editSession.replaceBlocks(cr, Masks.alwaysTrue(), pat);
 
         } catch (MaxChangedBlocksException ex) {
-            ex.printStackTrace();
+            PrisonMines.getInstance().getLogger().log(Level.WARNING, ex.getMessage(), ex);
         }
     }
 
@@ -323,9 +263,9 @@ public class Mine {
      */
     public ArrayList<Location> getAllLocations() {
         ArrayList<Location> locations = new ArrayList<>(volume);
-        for (int x = min.getBlockX(); x <= max.getBlockX(); x++) {
-            for (int y = min.getBlockY(); y <= max.getBlockY(); y++) {
-                for (int z = min.getBlockZ(); z <= max.getBlockZ(); z++) {
+        for (int x = min.x(); x <= max.x(); x++) {
+            for (int y = min.y(); y <= max.y(); y++) {
+                for (int z = min.z(); z <= max.z(); z++) {
                     locations.add(new Location(world, x, y, z));
                 }
             }
@@ -373,7 +313,7 @@ public class Mine {
      */
     public boolean isInMine(@NotNull Location location) {
         return Objects.requireNonNull(location.getWorld()).getUID().equals(world.getUID()) &&
-                region.contains(BlockVector3.at(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
+                region.contains(BlockVector3.at(location.x(), location.y(), location.z()));
     }
 
     /**
@@ -383,7 +323,9 @@ public class Mine {
      */
     public boolean teleportToSpawn(Player player) {
         if (spawnLocation == null) return false;
-        return player.teleport(spawnLocation);
+
+        PrisonMines.getInstance().getFoliaLib().getScheduler().teleportAsync(player, spawnLocation);
+        return true;
     }
 
     /**
@@ -393,7 +335,9 @@ public class Mine {
      */
     public boolean teleportToCenter(Player player) {
         if (world == null) return false;
-        return player.teleport(getCenterSurfaceLocation());
+
+        PrisonMines.getInstance().getFoliaLib().getScheduler().teleportAsync(player, getCenterSurfaceLocation());
+        return true;
     }
 
     /**
@@ -407,8 +351,8 @@ public class Mine {
             // If the spawn location is not set, teleport the player to the top of the mine by increasing their y value
             if (!teleportToSpawn(player)) {
                 Location loc = player.getLocation();
-                loc.setY(max.getY() + 1);
-                player.teleport(loc);
+                loc.setY(max.y() + 1);
+                PrisonMines.getInstance().getFoliaLib().getScheduler().teleportAsync(player, loc);
             }
         }
 
@@ -418,8 +362,8 @@ public class Mine {
                 // If the spawn location is not set, teleport the player to the top of the mine by increasing their y value
                 if (!teleportToSpawn(player)) {
                     Location loc = player.getLocation();
-                    loc.setY(max.getY() + 1);
-                    player.teleport(loc);
+                    loc.setY(max.y() + 1);
+                    PrisonMines.getInstance().getFoliaLib().getScheduler().teleportAsync(player, loc);
                 }
             }
         }
@@ -436,21 +380,6 @@ public class Mine {
         return players;
     }
 
-    protected boolean deleteConfigFile() {
-        return file.delete();
-    }
-
-    private void updateConfigFileAsync(String errorMessage) {
-        Bukkit.getScheduler().runTaskAsynchronously(PrisonMines.getInstance(), () -> {
-            try {
-                config.save(file);
-            } catch (IOException e) {
-                PrisonMines.getInstance().getLogger().severe(errorMessage);
-                throw new RuntimeException(e);
-            }
-        });
-    }
-
     /**
      * Updates the spawn location of this mine and pushes changes to the mine's config file
      * @param location The new location
@@ -462,10 +391,10 @@ public class Mine {
         }
 
         spawnLocation = location;
-        mineGUI.updateSpawnLocItem();
+        mineGUI.refresh();
 
-        config.set("loc.spawn", spawnLocation);
-        updateConfigFileAsync("Failed to push spawn location update to " + file.getName());
+        super.getConfig().set("loc.spawn", spawnLocation);
+        saveConfigAsync();
 
         return true;
     }
@@ -491,48 +420,48 @@ public class Mine {
         region.setPos2(max);
         updateVolume();
 
-        config.set("world", world.getName());
-        config.set("loc.min.x", min.getBlockX());
-        config.set("loc.min.y", min.getBlockY());
-        config.set("loc.min.z", min.getBlockZ());
-        config.set("loc.max.x", max.getBlockX());
-        config.set("loc.max.y", max.getBlockY());
-        config.set("loc.max.z", max.getBlockZ());
+        super.getConfig().set("world", world.getName());
+        super.getConfig().set("loc.min.x", min.x());
+        super.getConfig().set("loc.min.y", min.y());
+        super.getConfig().set("loc.min.z", min.z());
+        super.getConfig().set("loc.max.x", max.x());
+        super.getConfig().set("loc.max.y", max.y());
+        super.getConfig().set("loc.max.z", max.z());
 
-        updateConfigFileAsync("Failed to push region update to " + file.getName());
+        saveConfigAsync();
     }
 
     /**
      * Updates the max weight in this mine's config file
      */
     public void updateMaxWeight() {
-        config.set("contents.maxWeight", contents.getMaxWeight());
-        updateConfigFileAsync("Failed to push max weight update to " + file.getName());
+        super.getConfig().set("contents.maxWeight", contents.getMaxWeight());
+        saveConfigAsync();
     }
 
     /**
      * Updates the contents section of this mine's config file
      */
     public void pushContentsUpdate() {
-        config.set("contents.list", contents.getContentsAsStrings());
-        config.set("contents.maxWeight", contents.getMaxWeight());
-        updateConfigFileAsync("(update) Failed to push contents update to " + file.getName());
+        super.getConfig().set("contents.list", contents.getContentsAsStrings());
+        super.getConfig().set("contents.maxWeight", contents.getMaxWeight());
+        saveConfigAsync();
     }
 
     /**
      * Updates the resetLengthSeconds value in the config file
      */
     public void pushResetTimeUpdate() {
-        config.set("resetLengthSeconds", resetLengthSeconds);
-        updateConfigFileAsync("Failed to push reset length update to " + file.getName());
+        super.getConfig().set("resetLengthSeconds", resetLengthSeconds);
+        saveConfigAsync();
     }
 
     /**
      * Updates the resetPercentage value in the config file
      */
     public void pushResetPercentageUpdate() {
-        config.set("resetPercentage", resetPercentage);
-        updateConfigFileAsync("Failed to push reset percentage update to " + file.getName());
+        super.getConfig().set("resetPercentage", resetPercentage);
+        saveConfigAsync();
     }
 
     /**
@@ -541,11 +470,11 @@ public class Mine {
      */
     public void copyContentsFrom(Mine mine) {
         contents = new MineContents(mine.contents, this);
-        mineGUI.update();
+        mineGUI.refresh();
 
-        config.set("contents.list", contents.getContentsAsStrings());
-        config.set("contents.maxWeight", contents.getMaxWeight());
-        updateConfigFileAsync("(copy) Failed to push contents update to " + file.getName());
+        super.getConfig().set("contents.list", contents.getContentsAsStrings());
+        super.getConfig().set("contents.maxWeight", contents.getMaxWeight());
+        saveConfigAsync();
     }
 
     //***** GETTERS & SETTERS *****//
@@ -567,10 +496,10 @@ public class Mine {
      */
     public void setName(String newName) {
         name = Colors.conv(newName);
-        mineGUI.updateNameItem();
+        mineGUI.refresh();
 
-        config.set("name", newName);
-        updateConfigFileAsync("Failed to push name update to " + file.getName());
+        super.getConfig().set("name", newName);
+        saveConfigAsync();
     }
 
     /**
@@ -580,7 +509,7 @@ public class Mine {
     public void setResetLengthSeconds(int seconds) {
         seconds = Numbers.constrain(seconds, 60, 86400);
         resetLengthSeconds = seconds;
-        mineGUI.updateResetTimeItem();
+        mineGUI.refresh();
     }
 
     /**
@@ -591,7 +520,7 @@ public class Mine {
     public void setResetPercentage(int percent) {
         percent = Numbers.constrain(percent, -1, 95);
         resetPercentage = percent;
-        mineGUI.updateResetPercentageItem();
+        mineGUI.refresh();
     }
 
     /**
@@ -599,7 +528,7 @@ public class Mine {
      * @return A new Location object
      */
     public Location getMinLocation() {
-        return new Location(world, min.getX(), min.getY(), min.getZ());
+        return new Location(world, min.x(), min.y(), min.z());
     }
 
     /**
@@ -607,7 +536,7 @@ public class Mine {
      * @return A new Location object
      */
     public Location getMaxLocation() {
-        return new Location(world, max.getX(), max.getY(), max.getZ());
+        return new Location(world, max.x(), max.y(), max.z());
     }
 
     /**
@@ -618,11 +547,7 @@ public class Mine {
     public Location getCenterSurfaceLocation() {
         // Add 0.5 to x and z to account for the max point not being the border of the mine
         Vector3 center = region.getCenter();
-        return new Location(world, center.getX() + 0.5, max.getY() + 1, center.getZ() + 0.5);
-    }
-
-    public boolean failedToLoad() {
-        return failedToLoad;
+        return new Location(world, center.x() + 0.5, max.y() + 1, center.z() + 0.5);
     }
 
     public boolean hasSpawnLocation() {
@@ -686,23 +611,42 @@ public class Mine {
         return mineGUI;
     }
 
-    public ItemStack getGuiItem() {
-        if (updateItemFlag) {
-            updateItemFlag = false;
-            createGUIItem();
-        }
-        return guiItem;
-    }
-
-    public void setUpdateItemFlag() {
-        updateItemFlag = true;
-    }
-
     public CuboidRegion getRegion() {
         return region;
     }
 
     public World getWorld() {
         return world;
+    }
+
+    @Override
+    public @NotNull ItemStack getMenuItem(Player player) {
+        return ItemStackBuilder.of(contents.getMostCommonBlock(Material.BEDROCK))
+                .name("&e" + id)
+                .lore(
+                    "&7Name: " + name,
+                        "&7Spawn Location set: " + (hasSpawnLocation() ? "&aYes" : "&cNo"),
+                        "&7Reset Time: &a" + Numbers.getTimeFormatted(resetLengthSeconds),
+                        "&7Reset Percentage: " + (resetPercentage == -1 ? "&cDISABLED (-1)" : "&a" + resetPercentage + "%"),
+                        ""
+                )
+                .lore(contents.getInfoItem().getLore())
+                .build();
+    }
+
+    @Override
+    public @Nullable ItemStack getPlayerItem(Player player) {
+        return null;
+    }
+
+    @Override
+    public int compareTo(@NotNull Mine o) {
+        return id.compareTo(o.id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Mine o)) return false;
+        return id.equals(o.id);
     }
 }

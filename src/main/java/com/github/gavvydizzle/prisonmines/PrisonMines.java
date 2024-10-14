@@ -7,13 +7,13 @@ import com.github.gavvydizzle.prisonmines.gui.InventoryManager;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
 import com.github.gavvydizzle.prisonmines.papi.MyExpansion;
 import com.github.gavvydizzle.prisonmines.utils.Messages;
+import com.github.mittenmc.serverutils.CorePlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
 
-public final class PrisonMines extends JavaPlugin {
+public final class PrisonMines extends CorePlugin {
 
     private static PrisonMines instance;
     private MineManager mineManager;
@@ -30,30 +30,16 @@ public final class PrisonMines extends JavaPlugin {
         mineManager = new MineManager(instance);
         getServer().getPluginManager().registerEvents(mineManager, this);
 
-        inventoryManager = new InventoryManager(mineManager);
-        getServer().getPluginManager().registerEvents(inventoryManager, this);
+        inventoryManager = new InventoryManager(this, mineManager);
 
-        try {
-            new AdminCommandManager(Objects.requireNonNull(getCommand("pmine")), mineManager, inventoryManager);
-        } catch (NullPointerException e) {
-            getLogger().severe("The admin command name was changed in the plugin.yml file. Please make it \"islandAdmin\" and restart the server. You can change the aliases but NOT the command name.");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
-
-        if (!config.getBoolean("disableMineCommand")) {
-            try {
-                Objects.requireNonNull(getCommand("mine")).setExecutor(new TeleportToMineSpawnCommand(mineManager));
-            } catch (NullPointerException e) {
-                getLogger().severe("The mine command name was changed in the plugin.yml file. Please make it \"mine\" and restart the server. You can change the aliases but NOT the command name.");
-            }
-        }
+        new AdminCommandManager(getCommand("pmine"), mineManager, inventoryManager);
+        Objects.requireNonNull(getCommand("mine")).setExecutor(new TeleportToMineSpawnCommand(mineManager));
 
         try {
             new MyExpansion(mineManager).register();
         }
         catch (Exception e) {
-            Bukkit.getLogger().warning("Without PlaceholderAPI you are unable to use placeholders!");
+            getLogger().warning("Without PlaceholderAPI you are unable to use placeholders!");
         }
 
         Messages.reloadMessages();
@@ -63,6 +49,10 @@ public final class PrisonMines extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (inventoryManager != null) {
+            inventoryManager.closeAllMenus();
+        }
+
         if (mineManager != null) {
             mineManager.saveOnShutdown();
         }

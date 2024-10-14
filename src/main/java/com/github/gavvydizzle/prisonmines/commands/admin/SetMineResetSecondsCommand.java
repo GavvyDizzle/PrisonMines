@@ -42,10 +42,8 @@ public class SetMineResetSecondsCommand extends SubCommand implements WildcardCo
             return;
         }
 
-        int seconds;
-        try {
-            seconds = Integer.parseInt(args[2]);
-        } catch (NumberFormatException e) {
+        int seconds = Numbers.parseSeconds(args[2]);
+        if (seconds == -1) {
             sender.sendMessage(ChatColor.RED + "Invalid amount for seconds: " + args[2]);
             return;
         }

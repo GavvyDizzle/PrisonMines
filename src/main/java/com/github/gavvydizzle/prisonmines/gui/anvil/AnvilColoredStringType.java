@@ -3,7 +3,6 @@ package com.github.gavvydizzle.prisonmines.gui.anvil;
 import com.github.mittenmc.serverutils.Colors;
 import com.github.mittenmc.serverutils.anvilediting.AnvilStringType;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
 public class AnvilColoredStringType extends AnvilStringType {
 

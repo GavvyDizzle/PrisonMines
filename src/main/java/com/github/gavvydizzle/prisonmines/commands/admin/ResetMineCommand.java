@@ -1,5 +1,6 @@
 package com.github.gavvydizzle.prisonmines.commands.admin;
 
+import com.github.gavvydizzle.prisonmines.PrisonMines;
 import com.github.gavvydizzle.prisonmines.commands.AdminCommandManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
@@ -51,11 +52,18 @@ public class ResetMineCommand extends SubCommand implements WildcardCommand {
                 }
 
                 mineManager.resetAllMines(multiplier, false);
-                sender.sendMessage(ChatColor.GREEN + "Resetting all mines and randomized their timers. Each reset is delayed by " + MineManager.RESET_ALL_TICK_INTERVAL + " ticks");
+                if (PrisonMines.getInstance().getFoliaLib().isFolia()) {
+                    sender.sendMessage(ChatColor.GREEN + "Resetting all mines and randomized their timers");
+                } else {
+                    sender.sendMessage(ChatColor.GREEN + "Resetting all mines and randomized their timers. Each reset is delayed by " + MineManager.RESET_ALL_TICK_INTERVAL + " ticks");
+                }
             }
             else {
-                mineManager.resetAllMines(false);
-                sender.sendMessage(ChatColor.GREEN + "Resetting all mines. Each reset is delayed by " + MineManager.RESET_ALL_TICK_INTERVAL + " ticks");
+                mineManager.resetAllMines(false);if (PrisonMines.getInstance().getFoliaLib().isFolia()) {
+                    sender.sendMessage(ChatColor.GREEN + "Resetting all mines");
+                } else {
+                    sender.sendMessage(ChatColor.GREEN + "Resetting all mines. Each reset is delayed by " + MineManager.RESET_ALL_TICK_INTERVAL + " ticks");
+                }
             }
             return;
         }

@@ -7,256 +7,242 @@ import com.github.gavvydizzle.prisonmines.mines.contents.MineBlock;
 import com.github.gavvydizzle.prisonmines.mines.contents.WeightChangeResult;
 import com.github.gavvydizzle.prisonmines.utils.Sounds;
 import com.github.mittenmc.serverutils.Colors;
+import com.github.mittenmc.serverutils.ItemStackUtils;
 import com.github.mittenmc.serverutils.Numbers;
+import com.github.mittenmc.serverutils.gui.pages.ClickableItem;
+import com.github.mittenmc.serverutils.gui.pages.DisplayItem;
+import com.github.mittenmc.serverutils.gui.pages.PagesMenu;
+import com.github.mittenmc.serverutils.item.ItemStackBuilder;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.IntStream;
 
-public class MineGUI implements ClickableMenu {
+public class MineGUI extends PagesMenu<MineBlock> {
 
     private static final TextComponent component;
-    private static final int spawnLocItemSlot = 4, maxWeightItemSlot = 7, nameItemSlot = 3, resetTimeItemSlot = 5, resetPercentageItemSlot = 6, resetNowItemSlot = 8;
-    private static final ItemStack spawnLocItem, maxWeightItem, nameItem, resetTimeItem, resetPercentageItem, resetNowItem;
+    private static final int helpItemSlot = 0, contentsItemSlot = 1,
+            spawnLocItemSlot = 4, maxWeightItemSlot = 7, nameItemSlot = 3, resetTimeItemSlot = 5, resetPercentageItemSlot = 6, resetNowItemSlot = 8;
+    private static final ItemStack helpItem, spawnLocItem, maxWeightItem, nameItem, resetTimeItem, resetPercentageItem, resetNowItem;
 
     static {
         component = new TextComponent(TextComponent.fromLegacyText(Colors.conv("&7(!) Click here for command (!)")));
 
-        spawnLocItem = new ItemStack(Material.OAK_DOOR);
-        ItemMeta meta = spawnLocItem.getItemMeta();
-        assert meta != null;
-        meta.setDisplayName(Colors.conv("&eChange Spawn Location"));
-        meta.setLore(Colors.conv(Arrays.asList(
-                "&7Click here to change",
-                "&7Is set: &a{val}"
-        )));
-        spawnLocItem.setItemMeta(meta);
+        spawnLocItem = ItemStackBuilder.of(Material.OAK_DOOR)
+                .name("&eChange Spawn Location")
+                .lore("&7Click here to change", "&7Is set: &a{val}")
+                .build();
 
-        maxWeightItem = new ItemStack(Material.ANVIL);
-        meta = maxWeightItem.getItemMeta();
-        assert meta != null;
-        meta.setDisplayName(Colors.conv("&eChange Max Weight"));
-        meta.setLore(Colors.conv(Arrays.asList(
-                "&7Click here to change",
-                "&7Current weight: &a{val}"
-        )));
-        maxWeightItem.setItemMeta(meta);
+        maxWeightItem = ItemStackBuilder.of(Material.ANVIL)
+                .name("&eChange Max Weight")
+                .lore("&7Click here to change", "&7Current weight: &a{val}")
+                .build();
 
-        nameItem = new ItemStack(Material.FEATHER);
-        meta = nameItem.getItemMeta();
-        assert meta != null;
-        meta.setDisplayName(Colors.conv("&eChange Display Name"));
-        meta.setLore(Colors.conv(Arrays.asList(
-                "&7Click here to change",
-                "&7Current name: {val}"
-        )));
-        nameItem.setItemMeta(meta);
+        nameItem = ItemStackBuilder.of(Material.FEATHER)
+                .name("&eChange Display Name")
+                .lore("&7Click here to change",
+                        "&7Current name: {val}")
+                .build();
 
-        resetTimeItem = new ItemStack(Material.CLOCK);
-        meta = resetTimeItem.getItemMeta();
-        assert meta != null;
-        meta.setDisplayName(Colors.conv("&eChange Reset Time"));
-        meta.setLore(Colors.conv(Arrays.asList(
-                "&7Click here to change",
-                "&7Current time: &a{val}"
-        )));
-        resetTimeItem.setItemMeta(meta);
+        resetTimeItem = ItemStackBuilder.of(Material.CLOCK)
+                .name("&eChange Reset Time")
+                .lore("&7Click here to change",
+                        "&7Current time: &a{val}")
+                .build();
 
-        resetPercentageItem = new ItemStack(Material.STONE_PICKAXE);
-        meta = resetPercentageItem.getItemMeta();
-        assert meta != null;
-        meta.setDisplayName(Colors.conv("&eChange Reset Percentage"));
-        meta.setLore(Colors.conv(Arrays.asList(
-                "&7Click here to change",
-                "&7Current value: &a{val}"
-        )));
-        meta.removeItemFlags(ItemFlag.values());
-        resetPercentageItem.setItemMeta(meta);
+        resetPercentageItem = ItemStackBuilder.of(Material.STONE_PICKAXE)
+                .name("&eChange Reset Percentage")
+                .lore("&7Click here to change",
+                        "&7Current value: &a{val}")
+                .build();
 
-        resetNowItem = new ItemStack(Material.RED_STAINED_GLASS_PANE);
-        meta = resetNowItem.getItemMeta();
-        assert meta != null;
-        meta.setDisplayName(Colors.conv("&eReset"));
-        meta.setLore(Collections.singletonList(Colors.conv("&7Click here to reset the mine")));
-        resetNowItem.setItemMeta(meta);
+        resetNowItem = ItemStackBuilder.of(Material.RED_STAINED_GLASS_PANE)
+                .name("&eReset")
+                .lore("&7Click here to reset the mine")
+                .build();
+
+        helpItem = ItemStackBuilder.of(Material.BOOK)
+                .name("&eControls")
+                .lore(
+                        "&4NUM 9: Remove block",
+                        "&aNUM 1: Maximum Value",
+                        "&aNUM 2: +{click2}",
+                        "&aNUM 3: +{click3}",
+                        "&aNUM 4: +{click4}",
+                        "&aSHIFT+LEFT: +10",
+                        "&aLEFT: +1",
+                        "&cRIGHT: -1",
+                        "&cSHIFT+RIGHT: -10",
+                        "&cNUM 5: -{click4}",
+                        "&cNUM 6: -{click3}",
+                        "&cNUM 7: -{click2}",
+                        "&cNUM 8: Set to 0"
+                ).build();
     }
 
-    private final Inventory inventory;
     private final Mine mine;
     private boolean isDirty;
     private final Set<UUID> enteredFromListMenu;
 
     public MineGUI(Mine mine) {
+        super(new PagesMenuBuilder<MineBlock>(mine.getId() + " Contents", 6)
+                .slots(IntStream.rangeClosed(9, 44).boxed().toList())
+        );
+
         this.mine = mine;
-        inventory = Bukkit.createInventory(null, 54, mine.getId() + " Contents");
         isDirty = false;
         enteredFromListMenu = new HashSet<>();
-        update();
 
-        updateSettingsItems();
-        inventory.setItem(resetNowItemSlot, resetNowItem);
+        addStaticItems();
+        addDynamicItems();
+        reloadItems();
     }
 
-    /**
-     * Updates the contents and items with information about the contents
-     */
-    public void update() {
-        updateContents();
-        updateClickHelpItem();
-        updateMaxWeightItem();
+    private void reloadItems() {
+        setItems(mine.getContents().getBlockList());
     }
 
-    /**
-     * Updates the general info item and individual MineBlock items in this inventory
-     */
-    public void updateContents() {
-        inventory.setItem(1, mine.getContents().getInfoItem());
-
-        int i = 9;
-        for (MineBlock mineBlock : mine.getContents().getBlockList()) {
-            inventory.setItem(i++, mine.getContents().getInfoItem(mineBlock));
-        }
+    private void addStaticItems() {
+        super.addClickableItem(resetNowItemSlot, new ClickableItem<>(resetNowItem) {
+            @Override
+            public void onClick(InventoryClickEvent e, Player player) {
+                Sounds.generalClickSound.playSound(player);
+                mine.resetMine(true, false);
+                player.sendMessage(ChatColor.GREEN + "Resetting " + mine.getName());
+            }
+        });
     }
 
-    /**
-     * Updates the click helper item
-     */
-    public void updateClickHelpItem() {
-        ItemStack itemStack = new ItemStack(Material.BOOK);
-        ItemMeta meta = itemStack.getItemMeta();
-        assert meta != null;
+    private void addDynamicItems() {
+        super.addClickableItem(helpItemSlot, new DisplayItem<>(helpItem) {
+            @Override
+            public @NotNull ItemStack getMenuItem(Player player) {
+                ItemStack clone = helpItem.clone();
+                ItemStackUtils.replacePlaceholders(clone, Map.of(
+                        "{click2}", String.valueOf(mine.getContents().getClick2()),
+                        "{click3}", String.valueOf(mine.getContents().getClick3()),
+                        "{click4}", String.valueOf(mine.getContents().getClick4())
+                ));
+                return clone;
+            }
+        });
 
-        meta.setDisplayName(Colors.conv("&eControls"));
 
-        ArrayList<String> lore = new ArrayList<>();
-        lore.add(Colors.conv("&4NUM 9: Remove block"));
-        lore.add("");
-        lore.add(Colors.conv("&aNUM 1: Maximum Value"));
-        lore.add(Colors.conv("&aNUM 2: +" + mine.getContents().getClick2()));
-        lore.add(Colors.conv("&aNUM 3: +" + mine.getContents().getClick3()));
-        lore.add(Colors.conv("&aNUM 4: +" + mine.getContents().getClick4()));
-        lore.add(Colors.conv("&aSHIFT+LEFT: +10"));
-        lore.add(Colors.conv("&aLEFT: +1"));
-        lore.add("");
-        lore.add(Colors.conv("&cRIGHT: -1"));
-        lore.add(Colors.conv("&cSHIFT+RIGHT: -10"));
-        lore.add(Colors.conv("&cNUM 5: " + -mine.getContents().getClick4()));
-        lore.add(Colors.conv("&cNUM 6: " + -mine.getContents().getClick3()));
-        lore.add(Colors.conv("&cNUM 7: " + -mine.getContents().getClick2()));
-        lore.add(Colors.conv("&cNUM 8: Set to 0"));
-        meta.setLore(lore);
+        super.addClickableItem(contentsItemSlot, new DisplayItem<>(new ItemStack(Material.AIR)) {
+            @Override
+            public @NotNull ItemStack getMenuItem(Player player) {
+                return mine.getContents().getInfoItem();
+            }
+        });
 
-        itemStack.setItemMeta(meta);
-        inventory.setItem(0, itemStack);
+        super.addClickableItem(spawnLocItemSlot, new ClickableItem<>(new ItemStack(Material.POTATO)) {
+            @Override
+            public @NotNull ItemStack getMenuItem(Player player) {
+                ItemStack clone = spawnLocItem.clone();
+                ItemStackUtils.replacePlaceholders(clone, Map.of("{val}", mine.hasSpawnLocation() ? Colors.conv("&aYes") : Colors.conv("&cNo")));
+                return clone;
+            }
+
+            @Override
+            public void onClick(InventoryClickEvent e, Player player) {
+                // Remove the player from this list so command prompting does not trigger the list menu to open
+                enteredFromListMenu.remove(player.getUniqueId());
+                
+                TextComponent tc = component.duplicate();
+                tc.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pmine setSpawnLocation " + mine.getId() + " snap"));
+                Sounds.generalClickSound.playSound(player);
+            }
+        });
+
+        super.addClickableItem(maxWeightItemSlot, new ClickableItem<>(maxWeightItem) {
+            @Override
+            public @NotNull ItemStack getMenuItem(Player player) {
+                ItemStack clone = maxWeightItem.clone();
+                ItemStackUtils.replacePlaceholders(clone, Map.of("{val}", String.valueOf(mine.getContents().getMaxWeight())));
+                return clone;
+            }
+
+            @Override
+            public void onClick(InventoryClickEvent e, Player player) {
+                handleAnvilEditMenuOpen(player, AnvilInputGUI.EditType.MAX_WEIGHT);
+                Sounds.generalClickSound.playSound(player);
+            }
+        });
+
+        super.addClickableItem(nameItemSlot, new ClickableItem<>(nameItem) {
+            @Override
+            public @NotNull ItemStack getMenuItem(Player player) {
+                ItemStack clone = nameItem.clone();
+                ItemStackUtils.replacePlaceholders(clone, Map.of("{val}", mine.getName()));
+                return clone;
+            }
+
+            @Override
+            public void onClick(InventoryClickEvent e, Player player) {
+                handleAnvilEditMenuOpen(player, AnvilInputGUI.EditType.NAME);
+                Sounds.generalClickSound.playSound(player);
+            }
+        });
+
+        super.addClickableItem(resetTimeItemSlot, new ClickableItem<>(resetTimeItem) {
+            @Override
+            public @NotNull ItemStack getMenuItem(Player player) {
+                ItemStack clone = resetTimeItem.clone();
+                ItemStackUtils.replacePlaceholders(clone, Map.of("{val}", Numbers.getTimeFormatted(mine.getResetLengthSeconds())));
+                return clone;
+            }
+
+            @Override
+            public void onClick(InventoryClickEvent e, Player player) {
+                handleAnvilEditMenuOpen(player, AnvilInputGUI.EditType.RESET_TIME);
+                Sounds.generalClickSound.playSound(player);
+            }
+        });
+
+        super.addClickableItem(resetPercentageItemSlot, new ClickableItem<>(resetPercentageItem) {
+            @Override
+            public @NotNull ItemStack getMenuItem(Player player) {
+                ItemStack clone = resetPercentageItem.clone();
+                ItemStackUtils.replacePlaceholders(clone, Map.of("{val}", mine.getResetPercentage() == -1 ? "DISABLED (-1)" : mine.getResetPercentage() + "%"));
+                return clone;
+            }
+
+            @Override
+            public void onClick(InventoryClickEvent e, Player player) {
+                handleAnvilEditMenuOpen(player, AnvilInputGUI.EditType.RESET_PERCENTAGE);
+                Sounds.generalClickSound.playSound(player);
+            }
+        });
     }
-
-    public void updateSettingsItems() {
-        updateNameItem();
-        updateSpawnLocItem();
-        updateResetTimeItem();
-        updateResetPercentageItem();
-    }
-
-    public void updateNameItem() {
-        ItemStack itemStack = nameItem.clone();
-        ItemMeta meta = itemStack.getItemMeta();
-        assert meta != null;
-        ArrayList<String> lore = new ArrayList<>();
-        for (String s : Objects.requireNonNull(meta.getLore())) {
-            lore.add(s.replace("{val}", mine.getName()));
-        }
-        meta.setLore(lore);
-        itemStack.setItemMeta(meta);
-        inventory.setItem(nameItemSlot, itemStack);
-    }
-
-    public void updateSpawnLocItem() {
-        ItemStack itemStack = spawnLocItem.clone();
-        ItemMeta meta = itemStack.getItemMeta();
-        assert meta != null;
-        ArrayList<String> lore = new ArrayList<>();
-        for (String s : Objects.requireNonNull(meta.getLore())) {
-            lore.add(s.replace("{val}", mine.hasSpawnLocation() ? Colors.conv("&aYes") : Colors.conv("&aNo")));
-        }
-        meta.setLore(lore);
-        itemStack.setItemMeta(meta);
-        inventory.setItem(spawnLocItemSlot, itemStack);
-    }
-
-    public void updateResetTimeItem() {
-        ItemStack itemStack = resetTimeItem.clone();
-        ItemMeta meta = itemStack.getItemMeta();
-        assert meta != null;
-        ArrayList<String> lore = new ArrayList<>();
-        for (String s : Objects.requireNonNull(meta.getLore())) {
-            lore.add(s.replace("{val}", Numbers.getTimeFormatted(mine.getResetLengthSeconds())));
-        }
-        meta.setLore(lore);
-        itemStack.setItemMeta(meta);
-        inventory.setItem(resetTimeItemSlot, itemStack);
-    }
-
-    public void updateResetPercentageItem() {
-        ItemStack itemStack = resetPercentageItem.clone();
-        ItemMeta meta = itemStack.getItemMeta();
-        assert meta != null;
-
-        ArrayList<String> lore = new ArrayList<>();
-        String replacement;
-        if (mine.getResetPercentage() == -1) {
-            replacement = "DISABLED (-1)";
-        }
-        else {
-            replacement = mine.getResetPercentage() + "%";
-        }
-
-        for (String s : Objects.requireNonNull(meta.getLore())) {
-            lore.add(s.replace("{val}", replacement));
-        }
-        meta.setLore(lore);
-        itemStack.setItemMeta(meta);
-        inventory.setItem(resetPercentageItemSlot, itemStack);
-    }
-
-    public void updateMaxWeightItem() {
-        ItemStack itemStack = maxWeightItem.clone();
-        ItemMeta meta = itemStack.getItemMeta();
-        assert meta != null;
-        ArrayList<String> lore = new ArrayList<>();
-        for (String s : Objects.requireNonNull(meta.getLore())) {
-            lore.add(s.replace("{val}", String.valueOf(mine.getContents().getMaxWeight())));
-        }
-        meta.setLore(lore);
-        itemStack.setItemMeta(meta);
-        inventory.setItem(maxWeightItemSlot, itemStack);
-    }
-
-    @Override
-    public void openInventory(Player player) {
-        player.openInventory(inventory);
+    
+    private void handleAnvilEditMenuOpen(Player player, AnvilInputGUI.EditType type) {
+        enteredFromListMenu.remove(player.getUniqueId());
+        PrisonMines.getInstance().getInventoryManager().openAnvilEditMenu(player, type, mine);
     }
 
     public void openInventory(Player player, boolean openedFromListMenu) {
         if (openedFromListMenu) enteredFromListMenu.add(player.getUniqueId());
-        player.openInventory(inventory);
+        super.openInventory(player);
     }
 
     @Override
     public void closeInventory(Player player) {
+        super.closeInventory(player);
+
         if (enteredFromListMenu.remove(player.getUniqueId())) {
             InventoryManager inventoryManager = PrisonMines.getInstance().getInventoryManager();
-            Bukkit.getScheduler().scheduleSyncDelayedTask(PrisonMines.getInstance(), () ->
-                    inventoryManager.openMenu(player, inventoryManager.getMineListGUI()), 0);
+            inventoryManager.openMenuDelayed(player, inventoryManager.getMineListGUI());
         }
 
         saveIfDirty();
@@ -270,169 +256,106 @@ public class MineGUI implements ClickableMenu {
     }
 
     @Override
-    public void handleClick(InventoryClickEvent e) {
-        if (e.getClickedInventory() == e.getView().getTopInventory()) {
+    public void onItemClick(InventoryClickEvent e, Player player, MineBlock mineBlock) {
+        WeightChangeResult weightChangeResult;
 
-            Player player = (Player) e.getWhoClicked();
-
-            if (Numbers.isWithinRange(e.getSlot(), 3, 7)) {
-                TextComponent tc = component.duplicate();
-
-                Sounds.generalClickSound.playSound(player);
-
-                // Remove the player from this list so command prompting does not trigger the list menu to open
-                enteredFromListMenu.remove(player.getUniqueId());
-
-                switch (e.getSlot()) {
-                    case 3:
-                        PrisonMines.getInstance().getInventoryManager().openAnvilEditMenu(player, AnvilInputGUI.EditType.NAME, mine);
-                        return;
-                    case 4:
-                        tc.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/pmine setSpawnLocation " + mine.getId() + " snap"));
-                        break;
-                    case 5:
-                        PrisonMines.getInstance().getInventoryManager().openAnvilEditMenu(player, AnvilInputGUI.EditType.RESET_TIME, mine);
-                        return;
-                    case 6:
-                        PrisonMines.getInstance().getInventoryManager().openAnvilEditMenu(player, AnvilInputGUI.EditType.RESET_PERCENTAGE, mine);
-                        return;
-                    case 7:
-                        PrisonMines.getInstance().getInventoryManager().openAnvilEditMenu(player, AnvilInputGUI.EditType.MAX_WEIGHT, mine);
-                        return;
-                }
-                e.getWhoClicked().spigot().sendMessage(tc);
-
-                e.getWhoClicked().closeInventory();
-                return;
-            }
-            else if (e.getSlot() == 8) {
-                Sounds.generalClickSound.playSound(player);
-                mine.resetMine(true, false);
-                e.getWhoClicked().sendMessage(ChatColor.GREEN + "Resetting " + mine.getName());
-                return;
-            }
-
-            int minSlot = 9;
-            int maxSlot = minSlot + mine.getContents().getBlockList().size() - 1;
-            if (minSlot > maxSlot) return; // No blocks in the mine
-
-            int slot = e.getSlot();
-            if (!Numbers.isWithinRange(slot, minSlot, maxSlot)) return;
-
-            WeightChangeResult weightChangeResult;
-
-            ArrayList<MineBlock> arr = mine.getContents().getBlockList();
-            int index = slot - minSlot;
-            int amount = 0;
-
-            // Removal of mine block
-            if (e.getHotbarButton() == 8) {
-                if (e.getCurrentItem() == null) return;
-
-                Material material = e.getCurrentItem().getType();
-                if (material == Material.AIR) return;
-
-                if (mine.getContents().removeMineBlock(material)) {
-                    isDirty = true;
-                    inventory.clear(maxSlot);
-                    update();
-                    Sounds.generalClickSound.playSound((Player) e.getWhoClicked());
-                }
-            }
-            else if (e.getHotbarButton() >= 0) {
-                switch (e.getHotbarButton()) {
-                    case 0:
-                        amount = mine.getContents().getMaxWeight();
-                        break;
-                    case 1:
-                        amount = mine.getContents().getClick2();
-                        break;
-                    case 2:
-                        amount = mine.getContents().getClick3();
-                        break;
-                    case 3:
-                        amount = mine.getContents().getClick4();
-                        break;
-                    case 4:
-                        amount = -mine.getContents().getClick4();
-                        break;
-                    case 5:
-                        amount = -mine.getContents().getClick3();
-                        break;
-                    case 6:
-                        amount = -mine.getContents().getClick2();
-                        break;
-                    case 7:
-                        amount = -mine.getContents().getMaxWeight();
-                        break;
-                }
-            } else {
-                if (e.getClick() == ClickType.SHIFT_LEFT) {
-                    amount = 10;
-                } else if (e.getClick() == ClickType.LEFT) {
-                    amount = 1;
-                } else if (e.getClick() == ClickType.RIGHT) {
-                    amount = -1;
-                } else if (e.getClick() == ClickType.SHIFT_RIGHT) {
-                    amount = -10;
-                }
-            }
-
-            if (amount == 0) return;
-            weightChangeResult = mine.getContents().updateWeight(arr.get(index), amount, Math.abs(amount) >= mine.getContents().getMaxWeight());
-
-            switch (weightChangeResult) {
-                case MAX_WEIGHT_REACHED:
-                    player.sendMessage(ChatColor.RED + "Maximum weight reached");
-                    break;
-                case INVALID_RAISE:
-                    player.sendMessage(ChatColor.RED + "Cannot raise weight");
-                    break;
-                case INVALID_LOWER:
-                    player.sendMessage(ChatColor.RED + "Cannot lower weight");
-                    break;
-                case ERROR:
-                    player.sendMessage(ChatColor.RED + "Invalid action");
-                    break;
-                case SUCCESSFUL:
-                    isDirty = true;
-                    update();
-                    if (amount > 0) {
-                        Sounds.increaseChanceSound.playSound((Player) e.getWhoClicked());
-                    }
-                    else {
-                        Sounds.decreaseChanceSound.playSound((Player) e.getWhoClicked());
-                    }
-            }
-        }
-        else { // Add clicked item to the mine
-            if (e.getCurrentItem() == null) return;
-
-            Material material = e.getCurrentItem().getType();
-            if (material == Material.AIR) return;
-
-            if (!isValidMaterial(material)) {
-                e.getWhoClicked().sendMessage(ChatColor.RED + "Invalid block");
-                Sounds.generalFailSound.playSound((Player) e.getWhoClicked());
-                return;
-            }
-
-            if (mine.getContents().isMaterialAlreadyUsed(material)) {
-                e.getWhoClicked().sendMessage(ChatColor.RED + "Block already in use");
-                Sounds.generalFailSound.playSound((Player) e.getWhoClicked());
-                return;
-            }
-
-            if (mine.getContents().addMineBlock(new MineBlock(material))) {
+        // Removal of mine block
+        if (e.getHotbarButton() == 8) {
+            if (mine.getContents().removeMineBlock(mineBlock.getMaterial())) {
                 isDirty = true;
-                update();
+                reloadItems();
                 Sounds.generalClickSound.playSound((Player) e.getWhoClicked());
             }
-            else {
-                e.getWhoClicked().sendMessage(ChatColor.RED + "Maximum blocks reached (45)");
-                Sounds.generalFailSound.playSound((Player) e.getWhoClicked());
+            return;
+        }
+
+
+        int amount = 0;
+        if (e.getHotbarButton() >= 0) {
+            amount = switch (e.getHotbarButton()) {
+                case 0 -> mine.getContents().getMaxWeight();
+                case 1 -> mine.getContents().getClick2();
+                case 2 -> mine.getContents().getClick3();
+                case 3 -> mine.getContents().getClick4();
+                case 4 -> -mine.getContents().getClick4();
+                case 5 -> -mine.getContents().getClick3();
+                case 6 -> -mine.getContents().getClick2();
+                case 7 -> -mine.getContents().getMaxWeight();
+                default -> 0;
+            };
+        } else {
+            if (e.getClick() == ClickType.SHIFT_LEFT) {
+                amount = 10;
+            } else if (e.getClick() == ClickType.LEFT) {
+                amount = 1;
+            } else if (e.getClick() == ClickType.RIGHT) {
+                amount = -1;
+            } else if (e.getClick() == ClickType.SHIFT_RIGHT) {
+                amount = -10;
             }
         }
+
+        if (amount == 0) return;
+        weightChangeResult = mine.getContents().updateWeight(mineBlock, amount, Math.abs(amount) >= mine.getContents().getMaxWeight());
+
+        switch (weightChangeResult) {
+            case MAX_WEIGHT_REACHED:
+                player.sendMessage(ChatColor.RED + "Maximum weight reached");
+                break;
+            case INVALID_RAISE:
+                player.sendMessage(ChatColor.RED + "Cannot raise weight");
+                break;
+            case INVALID_LOWER:
+                player.sendMessage(ChatColor.RED + "Cannot lower weight");
+                break;
+            case ERROR:
+                player.sendMessage(ChatColor.RED + "Invalid action");
+                break;
+            case SUCCESSFUL:
+                isDirty = true;
+                reloadItems();
+                if (amount > 0) {
+                    Sounds.increaseChanceSound.playSound((Player) e.getWhoClicked());
+                }
+                else {
+                    Sounds.decreaseChanceSound.playSound((Player) e.getWhoClicked());
+                }
+        }
+    }
+
+    @Override
+    public void handleClick(InventoryClickEvent e) {
+        if (e.getClickedInventory() == e.getView().getTopInventory()) {
+            super.handleClick(e);
+            return;
+        }
+
+        e.setCancelled(true);
+
+        // Click to the bottom inventory
+        // Add clicked item to the mine
+        if (e.getCurrentItem() == null) return;
+
+        Material material = e.getCurrentItem().getType();
+        if (material == Material.AIR) return;
+
+        if (!isValidMaterial(material)) {
+            e.getWhoClicked().sendMessage(ChatColor.RED + "Invalid block");
+            Sounds.generalFailSound.playSound((Player) e.getWhoClicked());
+            return;
+        }
+
+        if (mine.getContents().isMaterialAlreadyUsed(material)) {
+            e.getWhoClicked().sendMessage(ChatColor.RED + "Block already in use");
+            Sounds.generalFailSound.playSound((Player) e.getWhoClicked());
+            return;
+        }
+
+        // Everything is good. Add the new block to the mine
+        mine.getContents().addMineBlock(new MineBlock(mine, material));
+        isDirty = true;
+        reloadItems();
+        Sounds.generalClickSound.playSound((Player) e.getWhoClicked());
     }
 
     /**

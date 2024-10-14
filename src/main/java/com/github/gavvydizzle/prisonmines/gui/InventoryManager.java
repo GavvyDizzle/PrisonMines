@@ -1,62 +1,34 @@
 package com.github.gavvydizzle.prisonmines.gui;
 
+import com.github.gavvydizzle.prisonmines.PrisonMines;
 import com.github.gavvydizzle.prisonmines.gui.anvil.AnvilInputGUI;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
+import com.github.mittenmc.serverutils.gui.ClickableMenu;
+import com.github.mittenmc.serverutils.gui.MenuManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
-public class InventoryManager implements Listener {
+public class InventoryManager extends MenuManager {
 
+    private final PrisonMines instance;
     private final MineListGUI mineListGUI;
     private final AnvilInputGUI anvilInputGUI;
-    private final HashMap<UUID, ClickableMenu> playersInInventory;
 
-    public InventoryManager(MineManager mineManager) {
+    public InventoryManager(PrisonMines instance, MineManager mineManager) {
+        super(instance);
+
+        this.instance = instance;
         mineListGUI = new MineListGUI(this, mineManager);
         anvilInputGUI = new AnvilInputGUI(this);
-        playersInInventory = new HashMap<>();
     }
 
     public void reload() {
-        mineListGUI.reload();
-    }
-
-    @EventHandler
-    private void onInventoryClose(InventoryCloseEvent e) {
-       ClickableMenu clickableMenu = playersInInventory.remove(e.getPlayer().getUniqueId());
-        if (clickableMenu != null) {
-            clickableMenu.closeInventory((Player) e.getPlayer());
-        }
-    }
-
-    @EventHandler
-    private void onInventoryClick(InventoryClickEvent e) {
-        if (e.getClickedInventory() == null) return;
-
-        if (playersInInventory.containsKey(e.getWhoClicked().getUniqueId())) {
-            e.setCancelled(true);
-            // Pass along the click event without verifying the inventory the click was done in
-            playersInInventory.get(e.getWhoClicked().getUniqueId()).handleClick(e);
-        }
-    }
-
-    /**
-     * Closes all menus belonging to this plugin
-     */
-    public void closeAllMenus() {
-        for (UUID uuid : playersInInventory.keySet()) {
-            Player player = Bukkit.getPlayer(uuid);
-            if (player != null) player.closeInventory();
-        }
-        playersInInventory.clear();
+        mineListGUI.reloadItems();
     }
 
     /**
@@ -65,32 +37,13 @@ public class InventoryManager implements Listener {
      */
     public void closeMineMenu(Mine mine) {
         MineGUI mineGUI = mine.getMineGUI();
-        HashMap<UUID, ClickableMenu> map = new HashMap<>(playersInInventory);
-        for (UUID uuid : map.keySet()) {
-            if (playersInInventory.get(uuid) == mineGUI) {
-                Player player = Bukkit.getPlayer(uuid);
-                if (player != null) player.closeInventory();
+
+        for (Map.Entry<UUID, ClickableMenu> entry : new HashMap<>(super.getViewers()).entrySet()) {
+            Player player = Bukkit.getPlayer(entry.getKey());
+            if (player != null && entry.getValue() == mineGUI) {
+                player.closeInventory();
             }
         }
-    }
-
-    /**
-     * Saves the menu the player opened so clicks can be passed to it correctly
-     * @param player The player
-     * @param clickableMenu The menu they opened
-     */
-    public void onMenuOpen(Player player, ClickableMenu clickableMenu) {
-        playersInInventory.put(player.getUniqueId(), clickableMenu);
-    }
-
-    /**
-     * Opens the given menu and adds the player to the list of players with opened menus
-     * @param player The player
-     * @param clickableMenu The menu to open
-     */
-    public void openMenu(Player player, ClickableMenu clickableMenu) {
-        clickableMenu.openInventory(player);
-        playersInInventory.put(player.getUniqueId(), clickableMenu);
     }
 
     /**
@@ -100,7 +53,7 @@ public class InventoryManager implements Listener {
      */
     public void openMineMenuFromAdminPanel(Player player, MineGUI mineGUI) {
         mineGUI.openInventory(player, true);
-        playersInInventory.put(player.getUniqueId(), mineGUI);
+        super.saveOpenedMenu(player, mineGUI);
     }
 
     /**
@@ -111,7 +64,7 @@ public class InventoryManager implements Listener {
      */
     public void openAnvilEditMenu(Player player, AnvilInputGUI.EditType editType, Mine mine) {
         anvilInputGUI.openInventory(player, editType, mine);
-        playersInInventory.put(player.getUniqueId(), anvilInputGUI);
+        super.saveOpenedMenu(player, anvilInputGUI);
     }
 
     public MineListGUI getMineListGUI() {

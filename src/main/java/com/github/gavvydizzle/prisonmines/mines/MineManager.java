@@ -1,17 +1,18 @@
 package com.github.gavvydizzle.prisonmines.mines;
 
+import com.github.gavvydizzle.prisonmines.PrisonMines;
+import com.github.gavvydizzle.prisonmines.events.MinePostResetEvent;
 import com.github.gavvydizzle.prisonmines.utils.Messages;
+import com.github.mittenmc.lib.folialib.impl.PlatformScheduler;
 import com.github.mittenmc.serverutils.Numbers;
-import com.github.mittenmc.serverutils.RepeatingTask;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.world.World;
-import com.github.gavvydizzle.prisonmines.PrisonMines;
-import com.github.gavvydizzle.prisonmines.events.MinePostResetEvent;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -25,13 +26,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.logging.Level;
 
 public class MineManager implements Listener {
 
@@ -67,10 +69,9 @@ public class MineManager implements Listener {
                 if (file.getName().endsWith(".yml")) {
                     try {
                         Mine mine = new Mine(file);
-                        if (!mine.failedToLoad()) mines.put(mine.getId(), mine);
+                        mines.put(mine.getId(), mine);
                     } catch (Exception e) {
-                        instance.getLogger().severe("Failed to load mine: " + file.getName() + "!");
-                        e.printStackTrace();
+                        instance.getLogger().log(Level.SEVERE, "Failed to load mine: " + file.getName() + "!", e);
                     }
                 }
             }
@@ -130,7 +131,7 @@ public class MineManager implements Listener {
      * If the mine is paused, then it will not be checked.
      */
     private void startResetClock() {
-        new RepeatingTask(instance, 0, 20) {
+        instance.getFoliaLib().getScheduler().runTimer(new BukkitRunnable() {
             @Override
             public void run() {
                 tick++;
@@ -153,7 +154,7 @@ public class MineManager implements Listener {
                     }
                 }
             }
-        };
+        }, 0, 20);
     }
 
     private void sendResetMessage(Mine mine, int secondsRemaining) {
@@ -170,25 +171,27 @@ public class MineManager implements Listener {
      * @param serverStart If this reset was triggered by the server start setting
      */
     public void resetAllMines(boolean serverStart) {
-        new RepeatingTask(instance, 0, RESET_ALL_TICK_INTERVAL) {
-
+        if (instance.getFoliaLib().isFolia()) {
+            for (Mine mine : mines.values()) {
+                mine.resetMine(true, serverStart);
+            }
+        } else {
             final ArrayList<Mine> arr = new ArrayList<>(mines.values());
-            int i = 0;
+            final int[] i = {0};
 
-            @Override
-            public void run() {
-                if (i >= arr.size()) {
-                    cancel();
+            instance.getFoliaLib().getScheduler().runTimer((t) -> {
+                if (i[0] == arr.size()) {
+                    t.cancel();
                     return;
                 }
 
                 // Checks if the mine is still loaded
                 // This mine will be skipped in the event that it was deleted
-                if (mines.containsKey(arr.get(i).getId())) {
-                    arr.get(i++).resetMine(true, serverStart);
+                if (mines.containsKey(arr.get(i[0]).getId())) {
+                    arr.get(i[0]++).resetMine(true, serverStart);
                 }
-            }
-        };
+            }, 0, RESET_ALL_TICK_INTERVAL);
+        }
     }
 
     /**
@@ -198,25 +201,27 @@ public class MineManager implements Listener {
      * @param serverStart If this reset was triggered by the server start setting
      */
     public void resetAllMines(double multiplier, boolean serverStart) {
-        new RepeatingTask(instance, 0, RESET_ALL_TICK_INTERVAL) {
-
+        if (instance.getFoliaLib().isFolia()) {
+            for (Mine mine : mines.values()) {
+                mine.resetMine(true, multiplier, serverStart);
+            }
+        } else {
             final ArrayList<Mine> arr = new ArrayList<>(mines.values());
-            int i = 0;
+            final int[] i = {0};
 
-            @Override
-            public void run() {
-                if (i >= arr.size()) {
-                    cancel();
+            instance.getFoliaLib().getScheduler().runTimer((t) -> {
+                if (i[0] == arr.size()) {
+                    t.cancel();
                     return;
                 }
 
                 // Checks if the mine is still loaded
                 // This mine will be skipped in the event that it was deleted
-                if (mines.containsKey(arr.get(i).getId())) {
-                    arr.get(i++).resetMine(true, multiplier, serverStart);
+                if (mines.containsKey(arr.get(i[0]).getId())) {
+                    arr.get(i[0]++).resetMine(true, multiplier, serverStart);
                 }
-            }
-        };
+            }, 0, RESET_ALL_TICK_INTERVAL);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -272,12 +277,50 @@ public class MineManager implements Listener {
             }
 
             Region region = e.getMine().getRegion();
-            BoundingBox boundingBox = new BoundingBox(region.getMinimumPoint().getX(), region.getMinimumPoint().getY(), region.getMinimumPoint().getZ(),
-                    region.getMaximumPoint().getX() + 1, region.getMaximumPoint().getY() + 1.5, region.getMaximumPoint().getZ() + 1);
-            for (Entity entity : e.getMine().getWorld().getNearbyEntities(boundingBox).stream().filter(entity -> entity.getType().equals(EntityType.DROPPED_ITEM)).collect(Collectors.toList())) {
-                entity.remove();
+            BoundingBox boundingBox = new BoundingBox(region.getMinimumPoint().x() - 1, region.getMinimumPoint().y(), region.getMinimumPoint().z() - 1,
+                    region.getMaximumPoint().x() + 1, region.getMaximumPoint().y() + 1.5, region.getMaximumPoint().z() + 1);
+
+            if (instance.getFoliaLib().isFolia()) {
+                // The folia approach follows the following steps:
+                // 1. Calculate every chunk containing the deletion bounding box
+                // 2. Run a delete task for every chunk
+
+                org.bukkit.World world = e.getMine().getWorld();
+
+                // Get chunk coordinates for the bounding box
+                int minChunkX = (int) Math.floor(boundingBox.getMinX() / 16.0);
+                int maxChunkX = (int) Math.floor(boundingBox.getMaxX() / 16.0);
+                int minChunkZ = (int) Math.floor(boundingBox.getMinZ() / 16.0);
+                int maxChunkZ = (int) Math.floor(boundingBox.getMaxZ() / 16.0);
+
+                // Loop through the chunks that the bounding box overlaps
+                for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+                    for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+                        world.getChunkAtAsyncUrgently(chunkX, chunkZ)
+                                .thenAccept(chunk -> removeItemsFromChunk(instance.getFoliaLib().getScheduler(), chunk, boundingBox));
+                    }
+                }
+            } else {
+                for (Entity entity : e.getMine().getWorld().getNearbyEntities(boundingBox).stream().filter(entity -> entity.getType().equals(EntityType.ITEM)).toList()) {
+                    entity.remove();
+                }
             }
         }
+    }
+
+    /**
+     * Removed all ItemStack entities present in this chunk which are within the bounding box
+     * @param scheduler The scheduler to use
+     * @param chunk The chunk which must be loaded
+     * @param boundingBox The bounding box
+     */
+    private void removeItemsFromChunk(PlatformScheduler scheduler, Chunk chunk, BoundingBox boundingBox) {
+        scheduler.runAtLocation(chunk.getBlock(0,0,0).getLocation(), (t) -> {
+            Arrays.stream(chunk.getEntities())
+                    .filter(entity -> entity.getType().equals(EntityType.ITEM))
+                    .filter(entity -> boundingBox.contains(entity.getLocation().toVector()))
+                    .forEach(Entity::remove);
+        });
     }
 
     /**
@@ -375,7 +418,7 @@ public class MineManager implements Listener {
 
         Mine mine = new Mine(id, region.getMinimumPoint(), region.getMaximumPoint(), BukkitAdapter.adapt(selectionWorld));
         mines.put(id, mine);
-        instance.getInventoryManager().getMineListGUI().addMine(mine);
+        instance.getInventoryManager().getMineListGUI().addItem(mine);
         player.sendMessage(ChatColor.GREEN + "Successfully created new mine: " + id);
         return mine;
     }
@@ -394,12 +437,10 @@ public class MineManager implements Listener {
         }
 
         Mine removed = mines.remove(id);
-        instance.getInventoryManager().getMineListGUI().removeMine(removed);
+        instance.getInventoryManager().getMineListGUI().removeItem(removed);
         instance.getInventoryManager().closeMineMenu(removed);
-        if (!removed.deleteConfigFile()) {
-            sender.sendMessage(ChatColor.RED + "Failed to delete the mine file " + removed.getId() + ".yml - You will need to manually delete it or it will load in the future");
-        }
 
+        removed.delete();
         sender.sendMessage(ChatColor.YELLOW + "Successfully deleted mine: " + id);
     }
 

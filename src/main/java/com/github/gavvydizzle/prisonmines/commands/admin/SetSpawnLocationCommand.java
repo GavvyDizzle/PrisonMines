@@ -108,7 +108,7 @@ public class SetSpawnLocationCommand extends SubCommand {
 
         if (mine.updateSpawnLocation(location)) {
             sender.sendMessage(ChatColor.GREEN + "Set mine " + mine.getId() + " visit location to: (" +
-                    location.getX() + ", " + location.getY() + ", " + location.getZ() + ", " + location.getYaw() + ", " + location.getPitch() + ")");
+                    location.x() + ", " + location.y() + ", " + location.z() + ", " + location.getYaw() + ", " + location.getPitch() + ")");
         }
         else {
             sender.sendMessage(ChatColor.RED + "The spawn location must be in the same world as the mine");
@@ -127,13 +127,13 @@ public class SetSpawnLocationCommand extends SubCommand {
         }
         else if (sender instanceof Player) {
             if (args.length == 4) {
-                StringUtil.copyPartialMatches(args[3], Collections.singletonList(String.valueOf(((Player) sender).getLocation().getX())), list);
+                StringUtil.copyPartialMatches(args[3], Collections.singletonList(String.valueOf(((Player) sender).getLocation().x())), list);
             }
             else if (args.length == 5) {
-                StringUtil.copyPartialMatches(args[4], Collections.singletonList(String.valueOf(((Player) sender).getLocation().getY())), list);
+                StringUtil.copyPartialMatches(args[4], Collections.singletonList(String.valueOf(((Player) sender).getLocation().y())), list);
             }
             else if (args.length == 6) {
-                StringUtil.copyPartialMatches(args[5], Collections.singletonList(String.valueOf(((Player) sender).getLocation().getZ())), list);
+                StringUtil.copyPartialMatches(args[5], Collections.singletonList(String.valueOf(((Player) sender).getLocation().z())), list);
             }
             else if (args.length == 7) {
                 StringUtil.copyPartialMatches(args[6], Collections.singletonList(String.valueOf(((Player) sender).getLocation().getYaw())), list);
@@ -155,8 +155,8 @@ public class SetSpawnLocationCommand extends SubCommand {
      */
     private void snapLocation(Location location, boolean snapXYZ) {
         if (snapXYZ) {
-            location.setX(location.getBlockX() + 0.5);
-            location.setZ(location.getBlockZ() + 0.5);
+            location.setX(location.x() + 0.5);
+            location.setZ(location.z() + 0.5);
         }
 
         location.setPitch(0);

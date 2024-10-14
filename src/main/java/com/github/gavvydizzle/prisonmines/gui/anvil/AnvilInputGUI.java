@@ -1,7 +1,6 @@
 package com.github.gavvydizzle.prisonmines.gui.anvil;
 
 import com.github.gavvydizzle.prisonmines.PrisonMines;
-import com.github.gavvydizzle.prisonmines.gui.ClickableMenu;
 import com.github.gavvydizzle.prisonmines.gui.InventoryManager;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
 import com.github.gavvydizzle.prisonmines.utils.Sounds;
@@ -10,7 +9,7 @@ import com.github.mittenmc.serverutils.Colors;
 import com.github.mittenmc.serverutils.Numbers;
 import com.github.mittenmc.serverutils.anvilediting.AnvilInputType;
 import com.github.mittenmc.serverutils.anvilediting.AnvilIntegerType;
-import org.bukkit.Bukkit;
+import com.github.mittenmc.serverutils.gui.ClickableMenu;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -39,7 +38,7 @@ public class AnvilInputGUI implements ClickableMenu, Listener {
     private final Map<UUID, EditType> editTypeMap;
 
     private final AnvilColoredStringType nameEditor;
-    private final AnvilIntegerType resetTimeEditor;
+    private final AnvilTimeType resetTimeEditor;
     private final AnvilIntegerType resetPercentageEditor;
     private final AnvilIntegerType maxWeightEditor;
 
@@ -51,7 +50,7 @@ public class AnvilInputGUI implements ClickableMenu, Listener {
         editTypeMap = new HashMap<>();
 
         nameEditor = new AnvilColoredStringType("Edit Name", ColoredItems.YELLOW.getGlass(Colors.conv("&eOld Name: {value}")), ColoredItems.LIME.getGlass(Colors.conv("&eNew Name: &r{value}")));
-        resetTimeEditor = new AnvilIntegerType("Edit Reset Time", ColoredItems.YELLOW.getGlass(Colors.conv("&eOld Reset Time: {value}s")), ColoredItems.LIME.getGlass(Colors.conv("&eNew Reset Time: {value}s")));
+        resetTimeEditor = new AnvilTimeType("Edit Reset Time", ColoredItems.YELLOW.getGlass(Colors.conv("&eOld Reset Time: {value}")), ColoredItems.LIME.getGlass(Colors.conv("&eNew Reset Time: {value}")));
         resetPercentageEditor = new AnvilIntegerType("Edit Reset Percentage", ColoredItems.YELLOW.getGlass(Colors.conv("&eOld Reset Percent: {value}%")), ColoredItems.LIME.getGlass(Colors.conv("&eNew Reset Percent: {value}%")));
         maxWeightEditor = new AnvilIntegerType("Edit Max Weight", ColoredItems.YELLOW.getGlass(Colors.conv("&eOld Max Weight: {value}")), ColoredItems.LIME.getGlass(Colors.conv("&eNew Max Weight: {value}")));
     }
@@ -169,7 +168,7 @@ public class AnvilInputGUI implements ClickableMenu, Listener {
         if (anvilInputType == null) return;
 
         player.openAnvil(null, true);
-        inventoryManager.onMenuOpen(player, this);
+        inventoryManager.saveOpenedMenu(player, this);
 
         Inventory inventory = player.getOpenInventory().getTopInventory();
         player.getOpenInventory().setTitle(anvilInputType.getInventoryName());
@@ -193,11 +192,14 @@ public class AnvilInputGUI implements ClickableMenu, Listener {
 
     @Override
     public void handleClick(InventoryClickEvent e) {
+        e.setCancelled(true);
+
         if (e.getClickedInventory() == null || e.getClickedInventory() != e.getView().getTopInventory()) return;
 
         if (e.getSlot() == 0) {
             Sounds.generalClickSound.playSound((Player) e.getWhoClicked());
-            Bukkit.getScheduler().scheduleSyncDelayedTask(PrisonMines.getInstance(), () -> inventoryManager.openMenu((Player) e.getWhoClicked(), mineMap.get(e.getWhoClicked().getUniqueId()).getMineGUI()));
+            PrisonMines.getInstance().getFoliaLib().getScheduler().runLater((t) ->
+                    inventoryManager.openMenu((Player) e.getWhoClicked(), mineMap.get(e.getWhoClicked().getUniqueId()).getMineGUI()), 1L);
         }
         else if (e.getSlot() == 2) {
             EditType editType = editTypeMap.get(e.getWhoClicked().getUniqueId());
@@ -222,7 +224,9 @@ public class AnvilInputGUI implements ClickableMenu, Listener {
                 else {
                     e.getWhoClicked().sendMessage(ChatColor.RED + "Unsuccessful edit");
                 }
-                Bukkit.getScheduler().scheduleSyncDelayedTask(PrisonMines.getInstance(), () -> inventoryManager.openMenu((Player) e.getWhoClicked(), mineMap.get(e.getWhoClicked().getUniqueId()).getMineGUI()));
+
+                PrisonMines.getInstance().getFoliaLib().getScheduler().runLater((t) ->
+                        inventoryManager.openMenu((Player) e.getWhoClicked(), mineMap.get(e.getWhoClicked().getUniqueId()).getMineGUI()), 1L);
             }
 
             Sounds.generalClickSound.playSound((Player) e.getWhoClicked());
@@ -244,7 +248,8 @@ public class AnvilInputGUI implements ClickableMenu, Listener {
             anvilInventory.setItem(2, null);
         }
         else {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(PrisonMines.getInstance(), () -> e.getView().getTopInventory().setItem(2, anvilInputType.getResultItem(input)), 0);
+            PrisonMines.getInstance().getFoliaLib().getScheduler().runLater((t) ->
+                    e.getView().getTopInventory().setItem(2, anvilInputType.getResultItem(input)), 1L);
         }
     }
 }

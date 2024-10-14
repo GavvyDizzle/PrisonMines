@@ -16,6 +16,12 @@ public class AnvilTimeType extends AnvilIntegerType {
     }
 
     @Override
+    public Object convert(String value) {
+        if (value == null || value.isBlank()) return -1;
+        return Numbers.parseSeconds(value);
+    }
+
+    @Override
     public String convert(Object value) {
         if (!(value instanceof Integer val)) return "";
         return Numbers.getTimeFormatted(val, "INVALID");
@@ -24,12 +30,6 @@ public class AnvilTimeType extends AnvilIntegerType {
     @Override
     public boolean isInvalidInput(@Nullable String value) {
         if (value == null || value.isBlank()) return true;
-
-        try {
-            int n = Integer.parseInt(value);
-            return n <= 0;
-        } catch (Exception ignored) {
-            return true;
-        }
+        return Numbers.parseSeconds(value) == -1;
     }
 }

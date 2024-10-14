@@ -1,21 +1,20 @@
 package com.github.gavvydizzle.prisonmines.mines.contents;
 
-import com.github.mittenmc.serverutils.Colors;
-import com.github.mittenmc.serverutils.Numbers;
 import com.github.gavvydizzle.prisonmines.PrisonMines;
 import com.github.gavvydizzle.prisonmines.mines.Mine;
+import com.github.mittenmc.serverutils.Colors;
+import com.github.mittenmc.serverutils.Numbers;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 public class MineContents {
 
     private static final ItemStack infoItem;
+    private final Comparator<MineBlock> weightComparator = Comparator.comparingInt(MineBlock::getWeight).reversed().thenComparing(MineBlock::getMaterialName);
 
     static {
         infoItem = new ItemStack(Material.PAPER);
@@ -25,14 +24,13 @@ public class MineContents {
         infoItem.setItemMeta(meta);
     }
 
-    private final MineBlockWeightSorter mineBlockWeightSorter;
-    private ArrayList<MineBlock> sortedBlockList;
-    private boolean hasChanged; // If any mine block has changed
-
     private final Mine mine;
-    private final ArrayList<MineBlock> blockList;
+    private final List<MineBlock> blockList;
     private int maxWeight, totalWeight;
     private int click2, click3, click4;
+
+    private List<MineBlock> weightSortedList;
+    private boolean haveContentsUpdated;
 
     public MineContents(Mine mine) {
         this.mine = mine;
@@ -40,10 +38,6 @@ public class MineContents {
         maxWeight = 1000;
         totalWeight = 0;
         calculateClickAmounts();
-
-        mineBlockWeightSorter = new MineBlockWeightSorter();
-        hasChanged = false;
-        sortBlockList();
     }
 
     /**
@@ -59,10 +53,6 @@ public class MineContents {
         click2 = other.click2;
         click3 = other.click3;
         click4 = other.click4;
-
-        mineBlockWeightSorter = new MineBlockWeightSorter();
-        hasChanged = false;
-        sortBlockList();
     }
 
     /**
@@ -97,16 +87,12 @@ public class MineContents {
                 continue;
             }
 
-            blockList.add(new MineBlock(material, w));
+            blockList.add(new MineBlock(mine, material, w));
         }
 
         calculateClickAmounts();
         calculateTotalWeight(false);
         Collections.sort(blockList);
-
-        mineBlockWeightSorter = new MineBlockWeightSorter();
-        hasChanged = false;
-        sortBlockList();
     }
 
     // Calculates the total weight of all MineBlocks
@@ -144,16 +130,12 @@ public class MineContents {
     /**
      * Adds a new MineBlock and sets its weight to 0
      * @param mineBlock The MineBlock
-     * @return True if the block was added, false if not
      */
-    public boolean addMineBlock(MineBlock mineBlock) {
-        if (blockList.size() >= 45) return false; // Don't allow more than 45 unique block types in a mine
-
+    public void addMineBlock(MineBlock mineBlock) {
         blockList.add(mineBlock);
         mineBlock.setWeight(0);
         Collections.sort(blockList);
-        hasChanged = true;
-        return true;
+        haveContentsUpdated = true;
     }
 
     public boolean removeMineBlock(Material material) {
@@ -162,7 +144,7 @@ public class MineContents {
 
         blockList.remove(mineBlock);
         totalWeight -= mineBlock.getWeight();
-        hasChanged = true;
+        haveContentsUpdated = true;
         return true;
     }
 
@@ -199,7 +181,7 @@ public class MineContents {
 
         calculateTotalWeight(false);
         Collections.sort(blockList);
-        hasChanged = true;
+        haveContentsUpdated = true;
         return WeightChangeResult.SUCCESSFUL;
     }
 
@@ -231,7 +213,7 @@ public class MineContents {
 
                 calculateTotalWeight(true);
                 Collections.sort(blockList);
-                hasChanged = true;
+                haveContentsUpdated = true;
             }
             else {
                 return false;
@@ -246,7 +228,7 @@ public class MineContents {
         maxWeight = newMaxWeight;
         calculateClickAmounts();
 
-        mine.getMineGUI().update();
+        mine.getMineGUI().refresh();
         if (scale) mine.pushContentsUpdate();
         else mine.updateMaxWeight();
 
@@ -302,7 +284,7 @@ public class MineContents {
         lore.add(Colors.conv("&7Used Weight: " + totalWeight + "/" + maxWeight));
         lore.add("");
         int i = 1;
-        for (MineBlock mineBlock : getSortedBlockList()) {
+        for (MineBlock mineBlock : getBlockList()) {
             lore.add(Colors.conv("&a" + i++ + ". " + mineBlock.getMaterial().toString() + " &f" + mineBlock.getWeight() + " &7(" + Numbers.round(getMineBlockFrequency(mineBlock)*100, 2) + "%)"));
         }
         meta.setLore(lore);
@@ -327,31 +309,32 @@ public class MineContents {
         return itemStack;
     }
 
+    /**
+     * This list is sorted by an alternative comparator which prioritizes highest weight.
+     * @return A sorted list of MineBlocks by their weight
+     */
+    public List<MineBlock> getWeightSortedList() {
+        if (weightSortedList == null || haveContentsUpdated) {
+            haveContentsUpdated = false;
+            weightSortedList = new ArrayList<>(blockList);
+            weightSortedList.sort(weightComparator);
+        }
+        return weightSortedList;
+    }
 
     /**
-     * If any changes have been done to the block list, this will sort the block list.
-     * It will also update the mine's display item for the admin list menu.
-     * @return The block list sorted by weight
+     * Gets the most common block in this mine
+     * @param defaultMaterial The material to return if the contents are empty
+     * @return The material for the most common block
      */
-    public ArrayList<MineBlock> getSortedBlockList() {
-        if (hasChanged) {
-            hasChanged = false;
-            sortBlockList();
+    public Material getMostCommonBlock(Material defaultMaterial) {
+        List<MineBlock> list = getWeightSortedList();
 
-            // Tell the mine's GUI item and the list menu to update on the next request
-            mine.setUpdateItemFlag();
-            PrisonMines.getInstance().getInventoryManager().getMineListGUI().setUpdateFlag();
-        }
-        return sortedBlockList;
+        if (list.isEmpty()) return defaultMaterial;
+        return list.getFirst().getMaterial();
     }
 
-    private void sortBlockList() {
-        sortedBlockList = new ArrayList<>(blockList);
-        sortedBlockList.sort(mineBlockWeightSorter);
-    }
-
-
-    public ArrayList<MineBlock> getBlockList() {
+    public List<MineBlock> getBlockList() {
         return blockList;
     }
 
