@@ -131,30 +131,27 @@ public class MineManager implements Listener {
      * If the mine is paused, then it will not be checked.
      */
     private void startResetClock() {
-        instance.getFoliaLib().getScheduler().runTimer(new BukkitRunnable() {
-            @Override
-            public void run() {
-                tick++;
-                for (Mine mine : mines.values()) {
-                    if (mine.isResettingPaused()) continue;
+        instance.getFoliaLib().getScheduler().runTimer(() -> {
+            tick++;
+            for (Mine mine : mines.values()) {
+                if (mine.isResettingPaused()) continue;
 
-                    int secondsRemaining = mine.getNextResetTick() - tick;
+                int secondsRemaining = mine.getNextResetTick() - tick;
 
-                    if (resetMessageSeconds.contains(secondsRemaining)) {
-                        sendResetMessage(mine, secondsRemaining);
+                if (resetMessageSeconds.contains(secondsRemaining)) {
+                    sendResetMessage(mine, secondsRemaining);
+                }
+
+                if (secondsRemaining <= 0) {
+                    if (!resetWhenMineFull && mine.getNumSolidBlocks() == mine.getVolume()) {
+                        mine.updateNextResetTick(); //don't reset but restart the timer
                     }
-
-                    if (secondsRemaining <= 0) {
-                        if (!resetWhenMineFull && mine.getNumSolidBlocks() == mine.getVolume()) {
-                            mine.updateNextResetTick(); //don't reset but restart the timer
-                        }
-                        else {
-                            mine.resetMine(true, false);
-                        }
+                    else {
+                        instance.getFoliaLib().getScheduler().runAtLocation(mine.getCenterSurfaceLocation(), (t) -> mine.resetMine(true, false));
                     }
                 }
             }
-        }, 0, 20);
+        }, 20, 20);
     }
 
     private void sendResetMessage(Mine mine, int secondsRemaining) {
@@ -190,7 +187,7 @@ public class MineManager implements Listener {
                 if (mines.containsKey(arr.get(i[0]).getId())) {
                     arr.get(i[0]++).resetMine(true, serverStart);
                 }
-            }, 0, RESET_ALL_TICK_INTERVAL);
+            }, RESET_ALL_TICK_INTERVAL, RESET_ALL_TICK_INTERVAL);
         }
     }
 
@@ -220,7 +217,7 @@ public class MineManager implements Listener {
                 if (mines.containsKey(arr.get(i[0]).getId())) {
                     arr.get(i[0]++).resetMine(true, multiplier, serverStart);
                 }
-            }, 0, RESET_ALL_TICK_INTERVAL);
+            }, RESET_ALL_TICK_INTERVAL, RESET_ALL_TICK_INTERVAL);
         }
     }
 
