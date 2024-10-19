@@ -7,13 +7,13 @@ import com.github.gavvydizzle.prisonmines.gui.InventoryManager;
 import com.github.gavvydizzle.prisonmines.mines.MineManager;
 import com.github.gavvydizzle.prisonmines.papi.MyExpansion;
 import com.github.gavvydizzle.prisonmines.utils.Messages;
-import com.github.mittenmc.serverutils.CorePlugin;
+import com.github.mittenmc.serverutils.ServerUtilsPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.Objects;
 
-public final class PrisonMines extends CorePlugin {
+public final class PrisonMines extends ServerUtilsPlugin {
 
     private static PrisonMines instance;
     private MineManager mineManager;
