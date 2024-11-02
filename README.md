@@ -9,7 +9,7 @@ A lightweight and simple mines plugin for your Spigot server
  - Message customization
 
 ### Requirements
- - This plugin has two dependencies: [ServerUtils](https://www.spigotmc.org/resources/serverutils.106515/) and [WorldEdit](https://dev.bukkit.org/projects/worldedit) or [FAWE](https://www.spigotmc.org/resources/fastasyncworldedit.13932/)
+ - This plugin has two dependencies: [ServerUtils](https://www.spigotmc.org/resources/serverutils.106515/) 2.1.2+ and [WorldEdit](https://dev.bukkit.org/projects/worldedit) or [FAWE](https://www.spigotmc.org/resources/fastasyncworldedit.13932/)
  - Optional dependencies: [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/)
 
 ### Save Data
